@@ -11,6 +11,11 @@ class Application(Gtk.Window):
 
 		self.set_default_size(800, 600)
 
+		header = Gtk.HeaderBar()
+		header.set_show_close_button(True)
+		header.props.title = "Application"
+		self.set_titlebar(header)
+
 		self.treeview = Gtk.TreeView()
 
 		renderer = Gtk.CellRendererText()
