@@ -13,10 +13,12 @@ class Application(Gtk.Window):
 
 		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-		self.searchentry = Gtk.SearchEntry()
+		searchentry = Gtk.SearchEntry()
+		searchentry.connect("search-changed", self.search)
+
 		searchbar = Gtk.SearchBar()
-		searchbar.connect_entry(self.searchentry)
-		searchbar.add(self.searchentry)
+		searchbar.connect_entry(searchentry)
+		searchbar.add(searchentry)
 
 		box.pack_start(searchbar, False, False, 0)
 
@@ -40,6 +42,9 @@ class Application(Gtk.Window):
 		searchbutton = Gtk.ToggleButton.new_with_label("Search")
 		searchbutton.connect("toggled", lambda button: searchbar.set_search_mode(button.get_active()))
 		header.pack_end(searchbutton)
+
+	def search(self, searchentry):
+		print searchentry.get_text()
 
 	def load_data(self):
 
