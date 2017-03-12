@@ -49,7 +49,15 @@ class Application(Gtk.Window):
 		self.searchbar.set_search_mode(mode)
 
 	def search(self, searchentry):
-		print searchentry.get_text()
+
+		filtered = Gtk.ListStore(str)
+		needle = searchentry.get_text().lower()
+
+		for item in self.data:
+			if needle in item[0].lower():
+				filtered.append([item[0]])
+
+		self.treeview.set_model(filtered)
 
 	def load_data(self):
 
