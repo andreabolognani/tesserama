@@ -15,12 +15,13 @@ class Application(Gtk.Window):
 
 		searchentry = Gtk.SearchEntry()
 		searchentry.connect("search-changed", self.search)
+		searchentry.connect("stop-search", lambda entry: self.set_search_mode(False))
 
-		searchbar = Gtk.SearchBar()
-		searchbar.connect_entry(searchentry)
-		searchbar.add(searchentry)
+		self.searchbar = Gtk.SearchBar()
+		self.searchbar.connect_entry(searchentry)
+		self.searchbar.add(searchentry)
 
-		box.pack_start(searchbar, False, False, 0)
+		box.pack_start(self.searchbar, False, False, 0)
 
 		self.treeview = Gtk.TreeView()
 
@@ -39,9 +40,13 @@ class Application(Gtk.Window):
 		header.props.title = "Application"
 		self.set_titlebar(header)
 
-		searchbutton = Gtk.ToggleButton.new_with_label("Search")
-		searchbutton.connect("toggled", lambda button: searchbar.set_search_mode(button.get_active()))
-		header.pack_end(searchbutton)
+		self.searchbutton = Gtk.ToggleButton.new_with_label("Search")
+		self.searchbutton.connect("toggled", lambda button: self.set_search_mode(button.get_active()))
+		header.pack_end(self.searchbutton)
+
+	def set_search_mode(self, mode):
+		self.searchbutton.set_active(mode)
+		self.searchbar.set_search_mode(mode)
 
 	def search(self, searchentry):
 		print searchentry.get_text()
