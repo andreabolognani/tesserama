@@ -11,10 +11,14 @@ class Application(Gtk.Window):
 
 		self.set_default_size(800, 600)
 
-		header = Gtk.HeaderBar()
-		header.set_show_close_button(True)
-		header.props.title = "Application"
-		self.set_titlebar(header)
+		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+		self.searchentry = Gtk.SearchEntry()
+		searchbar = Gtk.SearchBar()
+		searchbar.connect_entry(self.searchentry)
+		searchbar.add(self.searchentry)
+
+		box.pack_start(searchbar, False, False, 0)
 
 		self.treeview = Gtk.TreeView()
 
@@ -24,8 +28,18 @@ class Application(Gtk.Window):
 
 		scrolled = Gtk.ScrolledWindow()
 		scrolled.add(self.treeview)
+		box.pack_start(scrolled, True, True, 0)
 
-		self.add(scrolled)
+		self.add(box)
+
+		header = Gtk.HeaderBar()
+		header.set_show_close_button(True)
+		header.props.title = "Application"
+		self.set_titlebar(header)
+
+		searchbutton = Gtk.ToggleButton.new_with_label("Search")
+		searchbutton.connect("toggled", lambda button: searchbar.set_search_mode(button.get_active()))
+		header.pack_end(searchbutton)
 
 	def load_data(self):
 
@@ -36,6 +50,7 @@ class Application(Gtk.Window):
 				self.data.append([line.strip()])
 
 		self.treeview.set_model(self.data)
+
 
 win = Application()
 win.load_data()
