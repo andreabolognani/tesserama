@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os.path
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -7,7 +9,7 @@ from gi.repository import Gtk
 class Application(Gtk.Window):
 
 	def __init__(self):
-		Gtk.Window.__init__(self, title="Application")
+		Gtk.Window.__init__(self)
 
 		self.set_default_size(800, 600)
 
@@ -35,21 +37,20 @@ class Application(Gtk.Window):
 
 		self.add(box)
 
-		header = Gtk.HeaderBar()
-		header.set_show_close_button(True)
-		header.props.title = "Application"
-		self.set_titlebar(header)
+		self.headerbar = Gtk.HeaderBar()
+		self.headerbar.set_show_close_button(True)
+		self.set_titlebar(self.headerbar)
 
 		self.searchbutton = Gtk.ToggleButton()
 		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
 		self.searchbutton.set_tooltip_text("Search")
 		self.searchbutton.connect("toggled", lambda button: self.set_search_mode(button.get_active()))
-		header.pack_end(self.searchbutton)
+		self.headerbar.pack_end(self.searchbutton)
 
 		self.openbutton = Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.BUTTON)
 		self.openbutton.set_tooltip_text("Open")
 		self.openbutton.connect("clicked", lambda _: self.open_button_clicked())
-		header.pack_start(self.openbutton)
+		self.headerbar.pack_start(self.openbutton)
 
 	def set_search_mode(self, mode):
 		self.searchbutton.set_active(mode)
@@ -73,10 +74,13 @@ class Application(Gtk.Window):
 		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
 		if dialog.run() == Gtk.ResponseType.OK:
-			self.filename = dialog.get_filename()
+			self.set_filename(dialog.get_filename())
 			self.load_data()
 
 		dialog.destroy()
+
+	def set_filename(self, filename):
+		self.filename = os.path.abspath(os.path.realpath(filename))
 
 	def load_data(self):
 
@@ -87,6 +91,9 @@ class Application(Gtk.Window):
 				self.data.append([line.strip()])
 
 		self.treeview.set_model(self.data)
+
+		self.headerbar.props.title = os.path.basename(self.filename)
+		self.headerbar.props.subtitle = os.path.dirname(self.filename)
 
 
 win = Application()
