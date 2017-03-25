@@ -4,10 +4,11 @@ import os.path
 import sys
 
 import gi
+gi.require_version('GLib', '2.0')
 gi.require_version('Gio', '2.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gdk, Gtk
+from gi.repository import GLib, Gio, Gdk, Gtk
 
 class Application(Gtk.Application):
 
@@ -15,6 +16,7 @@ class Application(Gtk.Application):
 
 		Gtk.Application.__init__(self)
 
+		self.set_accels_for_action("win.search", ["<Ctrl>f"])
 		self.set_accels_for_action("win.open", ["<Ctrl>o"])
 		self.set_accels_for_action("win.save", ["<Ctrl>s"])
 
@@ -66,7 +68,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchbutton = Gtk.ToggleButton()
 		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
 		self.searchbutton.set_tooltip_text("Search")
-		self.searchbutton.connect("toggled", self.search_button_toggled)
+		self.searchbutton.set_action_name("win.search")
 		self.headerbar.pack_start(self.searchbutton)
 
 		self.menubutton = Gtk.ToggleButton()
@@ -82,6 +84,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.menupopover = Gtk.Popover.new_from_model(self.menubutton, menu)
 		self.menupopover.connect("closed", self.menu_popover_closed)
 
+		self.searchaction = Gio.SimpleAction.new_stateful("search", None, GLib.Variant.new_boolean(False))
+		self.searchaction.connect("activate", self.search_action_activated)
+		self.add_action(self.searchaction)
+
 		action = Gio.SimpleAction.new("open", None)
 		action.connect("activate", self.open_action_activated)
 		self.add_action(action)
@@ -89,11 +95,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action = Gio.SimpleAction.new("save", None)
 		action.connect("activate", self.save_action_activated)
 		self.add_action(action)
-
-		accel = Gtk.AccelGroup()
-		accel.connect(Gdk.keyval_from_name('f'), Gdk.ModifierType.CONTROL_MASK, 0,
-		              self.search_shortcut_activated)
-		self.add_accel_group(accel)
 
 
 	def set_filename(self, filename):
@@ -136,11 +137,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def start_search_action(self):
 
 		self.searchbar.set_search_mode(True)
-		self.searchbutton.set_active(True)
 
 	def stop_search_action(self):
 
-		self.searchbutton.set_active(False)
 		self.searchbar.set_search_mode(False)
 
 	def start_menu_action(self):
@@ -172,8 +171,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	# Signal handlers
 
-	def search_button_toggled(self, button):
-		if self.searchbutton.get_active():
+	def search_action_activated(self, action, param):
+		state = not self.searchaction.get_state().get_boolean()
+		self.searchaction.set_state(GLib.Variant.new_boolean(state))
+		if state:
 			self.start_search_action()
 		else:
 			self.stop_search_action()
@@ -182,7 +183,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.search()
 
 	def stop_search(self, entry):
-		self.stop_search_action()
+		self.searchaction.set_state(GLib.Variant.new_boolean(False))
 
 	def menu_button_toggled(self, button):
 		if self.menubutton.get_active():
@@ -192,9 +193,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def menu_popover_closed(self, popover):
 		self.stop_menu_action()
-
-	def search_shortcut_activated(self, accel, obj, key, mod):
-		self.start_search_action()
 
 	def open_action_activated(self, action, param):
 		self.open_action()
