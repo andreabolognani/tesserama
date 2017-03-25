@@ -11,9 +11,11 @@ from gi.repository import Gtk
 class Application(Gtk.Window):
 
 	def __init__(self):
+
 		Gtk.Window.__init__(self)
 
 		self.set_default_size(800, 600)
+		self.connect("delete-event", self.delete_event_emitted)
 
 		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
@@ -60,12 +62,14 @@ class Application(Gtk.Window):
 		self.headerbar.pack_start(self.savebutton)
 
 		accel = Gtk.AccelGroup()
+		accel.connect(Gdk.keyval_from_name('f'), Gdk.ModifierType.CONTROL_MASK, 0,
+		              self.search_shortcut_activated)
 		accel.connect(Gdk.keyval_from_name('o'), Gdk.ModifierType.CONTROL_MASK, 0,
 		              self.open_shortcut_activated)
 		accel.connect(Gdk.keyval_from_name('s'), Gdk.ModifierType.CONTROL_MASK, 0,
 		              self.save_shortcut_activated)
-		accel.connect(Gdk.keyval_from_name('f'), Gdk.ModifierType.CONTROL_MASK, 0,
-		              self.search_shortcut_activated)
+		accel.connect(Gdk.keyval_from_name('q'), Gdk.ModifierType.CONTROL_MASK, 0,
+		              self.quit_shortcut_activated)
 		self.add_accel_group(accel)
 
 	def set_filename(self, filename):
@@ -131,6 +135,10 @@ class Application(Gtk.Window):
 
 		self.save_data()
 
+	def quit_action(self):
+
+		Gtk.main_quit()
+
 
 	# Signal handlers
 
@@ -161,9 +169,14 @@ class Application(Gtk.Window):
 	def save_shortcut_activated(self, accel, obj, key, mod):
 		self.save_action()
 
+	def quit_shortcut_activated(self, accel, obj, key, mod):
+		self.quit_action()
+
+	def delete_event_emitted(self, a, b):
+		self.quit_action()
+
 
 win = Application()
 
-win.connect("delete-event", Gtk.main_quit)
 win.show_all()
 Gtk.main()
