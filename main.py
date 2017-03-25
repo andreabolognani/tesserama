@@ -44,13 +44,16 @@ class Application(Gtk.Window):
 		self.searchbutton = Gtk.ToggleButton()
 		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
 		self.searchbutton.set_tooltip_text("Search")
-		self.searchbutton.connect("toggled", lambda button: self.set_search_mode(button.get_active()))
+		self.searchbutton.connect("toggled", lambda _: self.search_button_clicked())
 		self.headerbar.pack_end(self.searchbutton)
 
 		self.openbutton = Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.BUTTON)
 		self.openbutton.set_tooltip_text("Open")
 		self.openbutton.connect("clicked", lambda _: self.open_button_clicked())
 		self.headerbar.pack_start(self.openbutton)
+
+	def set_filename(self, filename):
+		self.filename = os.path.abspath(os.path.realpath(filename))
 
 	def set_search_mode(self, mode):
 		self.searchbutton.set_active(mode)
@@ -67,21 +70,6 @@ class Application(Gtk.Window):
 
 		self.treeview.set_model(filtered)
 
-	def open_button_clicked(self):
-
-		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
-		                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-
-		if dialog.run() == Gtk.ResponseType.OK:
-			self.set_filename(dialog.get_filename())
-			self.load_data()
-
-		dialog.destroy()
-
-	def set_filename(self, filename):
-		self.filename = os.path.abspath(os.path.realpath(filename))
-
 	def load_data(self):
 
 		self.data = Gtk.ListStore(str)
@@ -94,6 +82,25 @@ class Application(Gtk.Window):
 
 		self.headerbar.props.title = os.path.basename(self.filename)
 		self.headerbar.props.subtitle = os.path.dirname(self.filename)
+
+
+	# Signal handlers
+
+	def search_button_clicked(self):
+
+		 self.set_search_mode(self.searchbutton.get_active())
+
+	def open_button_clicked(self):
+
+		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
+		                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+		if dialog.run() == Gtk.ResponseType.OK:
+			self.set_filename(dialog.get_filename())
+			self.load_data()
+
+		dialog.destroy()
 
 
 win = Application()
