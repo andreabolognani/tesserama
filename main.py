@@ -52,6 +52,11 @@ class Application(Gtk.Window):
 		self.openbutton.connect("clicked", lambda _: self.open_button_clicked())
 		self.headerbar.pack_start(self.openbutton)
 
+		self.savebutton = Gtk.Button.new_from_icon_name("document-save-symbolic", Gtk.IconSize.BUTTON)
+		self.savebutton.set_tooltip_text("Save")
+		self.savebutton.connect("clicked", lambda _: self.save_button_clicked())
+		self.headerbar.pack_start(self.savebutton)
+
 	def set_filename(self, filename):
 		self.filename = os.path.abspath(os.path.realpath(filename))
 
@@ -83,6 +88,12 @@ class Application(Gtk.Window):
 		self.headerbar.props.title = os.path.basename(self.filename)
 		self.headerbar.props.subtitle = os.path.dirname(self.filename)
 
+	def save_data(self):
+
+		with open(self.filename, 'wb') as f:
+			for item in self.data:
+				f.write(item[0] + "\n")
+
 
 	# Signal handlers
 
@@ -101,6 +112,10 @@ class Application(Gtk.Window):
 			self.load_data()
 
 		dialog.destroy()
+
+	def save_button_clicked(self):
+
+		self.save_data()
 
 
 win = Application()
