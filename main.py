@@ -74,7 +74,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.menubutton = Gtk.ToggleButton()
 		self.menubutton.set_image(Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.BUTTON))
 		self.menubutton.set_tooltip_text("Menu")
-		self.menubutton.connect("toggled", self.menu_button_toggled)
+		self.menubutton.set_action_name("win.menu")
 		self.headerbar.pack_end(self.menubutton)
 
 		menu = Gio.Menu()
@@ -87,6 +87,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchaction = Gio.SimpleAction.new_stateful("search", None, GLib.Variant.new_boolean(False))
 		self.searchaction.connect("activate", self.search_action_activated)
 		self.add_action(self.searchaction)
+
+		self.menuaction = Gio.SimpleAction.new_stateful("menu", None, GLib.Variant.new_boolean(False))
+		self.menuaction.connect("activate", self.menu_action_activated)
+		self.add_action(self.menuaction)
 
 		action = Gio.SimpleAction.new("open", None)
 		action.connect("activate", self.open_action_activated)
@@ -145,11 +149,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def start_menu_action(self):
 
 		self.menupopover.popup()
-		self.menubutton.set_active(True)
 
 	def stop_menu_action(self):
 
-		self.menubutton.set_active(False)
 		self.menupopover.popdown()
 
 	def open_action(self):
@@ -185,14 +187,16 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def stop_search(self, entry):
 		self.searchaction.set_state(GLib.Variant.new_boolean(False))
 
-	def menu_button_toggled(self, button):
-		if self.menubutton.get_active():
+	def menu_action_activated(self, action, param):
+		state = not self.menuaction.get_state().get_boolean()
+		self.menuaction.set_state(GLib.Variant.new_boolean(state))
+		if state:
 			self.start_menu_action()
 		else:
 			self.stop_menu_action()
 
 	def menu_popover_closed(self, popover):
-		self.stop_menu_action()
+		self.menuaction.set_state(GLib.Variant.new_boolean(False))
 
 	def open_action_activated(self, action, param):
 		self.open_action()
