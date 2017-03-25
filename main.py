@@ -4,16 +4,19 @@ import os.path
 import sys
 
 import gi
+gi.require_version('Gio', '2.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gdk
-from gi.repository import Gtk
+from gi.repository import Gio, Gdk, Gtk
 
 class Application(Gtk.Application):
 
 	def __init__(self):
 
 		Gtk.Application.__init__(self)
+
+		self.set_accels_for_action("win.open", ["<Ctrl>o"])
+		self.set_accels_for_action("win.save", ["<Ctrl>s"])
 
 		self.connect("activate", self.activate_action)
 
@@ -64,26 +67,34 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
 		self.searchbutton.set_tooltip_text("Search")
 		self.searchbutton.connect("toggled", self.search_button_toggled)
-		self.headerbar.pack_end(self.searchbutton)
+		self.headerbar.pack_start(self.searchbutton)
 
-		self.openbutton = Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.BUTTON)
-		self.openbutton.set_tooltip_text("Open")
-		self.openbutton.connect("clicked", self.open_button_clicked)
-		self.headerbar.pack_start(self.openbutton)
+		self.menubutton = Gtk.ToggleButton()
+		self.menubutton.set_image(Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.BUTTON))
+		self.menubutton.set_tooltip_text("Menu")
+		self.menubutton.connect("toggled", self.menu_button_toggled)
+		self.headerbar.pack_end(self.menubutton)
 
-		self.savebutton = Gtk.Button.new_from_icon_name("document-save-symbolic", Gtk.IconSize.BUTTON)
-		self.savebutton.set_tooltip_text("Save")
-		self.savebutton.connect("clicked", self.save_button_clicked)
-		self.headerbar.pack_start(self.savebutton)
+		menu = Gio.Menu()
+		menu.append("Open", "win.open")
+		menu.append("Save", "win.save")
+
+		self.menupopover = Gtk.Popover.new_from_model(self.menubutton, menu)
+		self.menupopover.connect("closed", self.menu_popover_closed)
+
+		action = Gio.SimpleAction.new("open", None)
+		action.connect("activate", self.open_action_activated)
+		self.add_action(action)
+
+		action = Gio.SimpleAction.new("save", None)
+		action.connect("activate", self.save_action_activated)
+		self.add_action(action)
 
 		accel = Gtk.AccelGroup()
 		accel.connect(Gdk.keyval_from_name('f'), Gdk.ModifierType.CONTROL_MASK, 0,
 		              self.search_shortcut_activated)
-		accel.connect(Gdk.keyval_from_name('o'), Gdk.ModifierType.CONTROL_MASK, 0,
-		              self.open_shortcut_activated)
-		accel.connect(Gdk.keyval_from_name('s'), Gdk.ModifierType.CONTROL_MASK, 0,
-		              self.save_shortcut_activated)
 		self.add_accel_group(accel)
+
 
 	def set_filename(self, filename):
 
@@ -132,6 +143,16 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchbutton.set_active(False)
 		self.searchbar.set_search_mode(False)
 
+	def start_menu_action(self):
+
+		self.menupopover.popup()
+		self.menubutton.set_active(True)
+
+	def stop_menu_action(self):
+
+		self.menubutton.set_active(False)
+		self.menupopover.popdown()
+
 	def open_action(self):
 
 		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
@@ -163,19 +184,22 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def stop_search(self, entry):
 		self.stop_search_action()
 
-	def open_button_clicked(self, button):
-		self.open_action()
+	def menu_button_toggled(self, button):
+		if self.menubutton.get_active():
+			self.start_menu_action()
+		else:
+			self.stop_menu_action()
 
-	def save_button_clicked(self, button):
-		self.save_action()
+	def menu_popover_closed(self, popover):
+		self.stop_menu_action()
 
 	def search_shortcut_activated(self, accel, obj, key, mod):
 		self.start_search_action()
 
-	def open_shortcut_activated(self, accel, obj, key, mod):
+	def open_action_activated(self, action, param):
 		self.open_action()
 
-	def save_shortcut_activated(self, accel, obj, key, mod):
+	def save_action_activated(self, action, param):
 		self.save_action()
 
 
