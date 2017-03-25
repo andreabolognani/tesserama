@@ -108,10 +108,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.headerbar.props.title = os.path.basename(self.filename)
 		self.headerbar.props.subtitle = os.path.dirname(self.filename)
 
-	def search(self, searchentry):
+	def search(self):
 
 		filtered = Gtk.ListStore(str)
-		needle = searchentry.get_text().lower()
+		needle = self.searchentry.get_text().lower()
 
 		for item in self.data:
 			if needle in item[0].lower():
