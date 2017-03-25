@@ -3,7 +3,9 @@
 import os.path
 
 import gi
+gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
+from gi.repository import Gdk
 from gi.repository import Gtk
 
 class Application(Gtk.Window):
@@ -15,13 +17,13 @@ class Application(Gtk.Window):
 
 		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-		searchentry = Gtk.SearchEntry()
-		searchentry.connect("search-changed", self.search)
-		searchentry.connect("stop-search", lambda entry: self.set_search_mode(False))
+		self.searchentry = Gtk.SearchEntry()
+		self.searchentry.connect("search-changed", self.search_changed)
+		self.searchentry.connect("stop-search", self.stop_search)
 
 		self.searchbar = Gtk.SearchBar()
-		self.searchbar.connect_entry(searchentry)
-		self.searchbar.add(searchentry)
+		self.searchbar.connect_entry(self.searchentry)
+		self.searchbar.add(self.searchentry)
 
 		box.pack_start(self.searchbar, False, False, 0)
 
@@ -44,25 +46,34 @@ class Application(Gtk.Window):
 		self.searchbutton = Gtk.ToggleButton()
 		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
 		self.searchbutton.set_tooltip_text("Search")
-		self.searchbutton.connect("toggled", lambda _: self.search_button_clicked())
+		self.searchbutton.connect("toggled", self.search_button_toggled)
 		self.headerbar.pack_end(self.searchbutton)
 
 		self.openbutton = Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.BUTTON)
 		self.openbutton.set_tooltip_text("Open")
-		self.openbutton.connect("clicked", lambda _: self.open_button_clicked())
+		self.openbutton.connect("clicked", self.open_button_clicked)
 		self.headerbar.pack_start(self.openbutton)
 
 		self.savebutton = Gtk.Button.new_from_icon_name("document-save-symbolic", Gtk.IconSize.BUTTON)
 		self.savebutton.set_tooltip_text("Save")
-		self.savebutton.connect("clicked", lambda _: self.save_button_clicked())
+		self.savebutton.connect("clicked", self.save_button_clicked)
 		self.headerbar.pack_start(self.savebutton)
 
+		accel = Gtk.AccelGroup()
+		accel.connect(Gdk.keyval_from_name('o'), Gdk.ModifierType.CONTROL_MASK, 0,
+		              self.open_shortcut_activated)
+		accel.connect(Gdk.keyval_from_name('s'), Gdk.ModifierType.CONTROL_MASK, 0,
+		              self.save_shortcut_activated)
+		accel.connect(Gdk.keyval_from_name('f'), Gdk.ModifierType.CONTROL_MASK, 0,
+		              self.search_shortcut_activated)
+		self.add_accel_group(accel)
+
 	def set_filename(self, filename):
+
 		self.filename = os.path.abspath(os.path.realpath(filename))
 
-	def set_search_mode(self, mode):
-		self.searchbutton.set_active(mode)
-		self.searchbar.set_search_mode(mode)
+		self.headerbar.props.title = os.path.basename(self.filename)
+		self.headerbar.props.subtitle = os.path.dirname(self.filename)
 
 	def search(self, searchentry):
 
@@ -85,9 +96,6 @@ class Application(Gtk.Window):
 
 		self.treeview.set_model(self.data)
 
-		self.headerbar.props.title = os.path.basename(self.filename)
-		self.headerbar.props.subtitle = os.path.dirname(self.filename)
-
 	def save_data(self):
 
 		with open(self.filename, 'wb') as f:
@@ -95,13 +103,19 @@ class Application(Gtk.Window):
 				f.write(item[0] + "\n")
 
 
-	# Signal handlers
+	# High-level actions
 
-	def search_button_clicked(self):
+	def start_search_action(self):
 
-		 self.set_search_mode(self.searchbutton.get_active())
+		self.searchbar.set_search_mode(True)
+		self.searchbutton.set_active(True)
 
-	def open_button_clicked(self):
+	def stop_search_action(self):
+
+		self.searchbutton.set_active(False)
+		self.searchbar.set_search_mode(False)
+
+	def open_action(self):
 
 		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
 		                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -113,9 +127,39 @@ class Application(Gtk.Window):
 
 		dialog.destroy()
 
-	def save_button_clicked(self):
+	def save_action(self):
 
 		self.save_data()
+
+
+	# Signal handlers
+
+	def search_button_toggled(self, button):
+		if self.searchbutton.get_active():
+			self.start_search_action()
+		else:
+			self.stop_search_action()
+
+	def search_changed(self, entry):
+		self.search()
+
+	def stop_search(self, entry):
+		self.stop_search_action()
+
+	def open_button_clicked(self, button):
+		self.open_action()
+
+	def save_button_clicked(self, button):
+		self.save_action()
+
+	def search_shortcut_activated(self, accel, obj, key, mod):
+		self.start_search_action()
+
+	def open_shortcut_activated(self, accel, obj, key, mod):
+		self.open_action()
+
+	def save_shortcut_activated(self, accel, obj, key, mod):
+		self.save_action()
 
 
 win = Application()
