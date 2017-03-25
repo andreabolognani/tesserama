@@ -40,7 +40,9 @@ class Application(Gtk.Window):
 		header.props.title = "Application"
 		self.set_titlebar(header)
 
-		self.searchbutton = Gtk.ToggleButton.new_with_label("Search")
+		self.searchbutton = Gtk.ToggleButton()
+		self.searchbutton.set_image(Gtk.Image.new_from_icon_name("edit-find-symbolic", Gtk.IconSize.BUTTON))
+		self.searchbutton.set_tooltip_text("Search")
 		self.searchbutton.connect("toggled", lambda button: self.set_search_mode(button.get_active()))
 		header.pack_end(self.searchbutton)
 
