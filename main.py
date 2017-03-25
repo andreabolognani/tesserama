@@ -46,6 +46,11 @@ class Application(Gtk.Window):
 		self.searchbutton.connect("toggled", lambda button: self.set_search_mode(button.get_active()))
 		header.pack_end(self.searchbutton)
 
+		self.openbutton = Gtk.Button.new_from_icon_name("document-open-symbolic", Gtk.IconSize.BUTTON)
+		self.openbutton.set_tooltip_text("Open")
+		self.openbutton.connect("clicked", lambda _: self.open_button_clicked())
+		header.pack_start(self.openbutton)
+
 	def set_search_mode(self, mode):
 		self.searchbutton.set_active(mode)
 		self.searchbar.set_search_mode(mode)
@@ -61,11 +66,23 @@ class Application(Gtk.Window):
 
 		self.treeview.set_model(filtered)
 
+	def open_button_clicked(self):
+
+		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
+		                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+		if dialog.run() == Gtk.ResponseType.OK:
+			self.filename = dialog.get_filename()
+			self.load_data()
+
+		dialog.destroy()
+
 	def load_data(self):
 
 		self.data = Gtk.ListStore(str)
 
-		with open("COPYING", "rb") as f:
+		with open(self.filename, "rb") as f:
 			for line in f:
 				self.data.append([line.strip()])
 
@@ -73,7 +90,6 @@ class Application(Gtk.Window):
 
 
 win = Application()
-win.load_data()
 
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()
