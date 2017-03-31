@@ -37,7 +37,11 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.set_default_size(800, 600)
 
-		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		# An empty label will be displayed before a file has been loaded
+		empty = Gtk.Label()
+
+		# The contents will be displayed once a file has been loaded
+		contents = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
 		self.searchentry = Gtk.SearchEntry()
 		self.searchentry.connect("search-changed", self.search_changed)
@@ -47,7 +51,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchbar.connect_entry(self.searchentry)
 		self.searchbar.add(self.searchentry)
 
-		box.pack_start(self.searchbar, False, False, 0)
+		contents.pack_start(self.searchbar, False, False, 0)
 
 		self.treeview = Gtk.TreeView()
 
@@ -57,10 +61,15 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		scrolled = Gtk.ScrolledWindow()
 		scrolled.add(self.treeview)
-		box.pack_start(scrolled, True, True, 0)
+		contents.pack_start(scrolled, True, True, 0)
 
-		self.add(box)
+		# The stack allows us to switch between application states
+		self.stack = Gtk.Stack()
+		self.stack.add_named(empty, "empty")
+		self.stack.add_named(contents, "contents")
+		self.add(self.stack)
 
+		# The header bar will be displayed at all times
 		self.headerbar = Gtk.HeaderBar()
 		self.headerbar.set_show_close_button(True)
 		self.set_titlebar(self.headerbar)
@@ -100,7 +109,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action.connect("activate", self.save_action_activated)
 		self.add_action(action)
 
-
 	def set_filename(self, filename):
 
 		self.filename = os.path.abspath(os.path.realpath(filename))
@@ -128,6 +136,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 				self.data.append([line.strip()])
 
 		self.treeview.set_model(self.data)
+
+		self.stack.set_visible_child_name("contents")
 
 	def save_data(self):
 
