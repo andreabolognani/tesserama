@@ -65,9 +65,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action.connect("activate", self.open_action_activated)
 		self.add_action(action)
 
-		action = Gio.SimpleAction.new("save", None)
-		action.connect("activate", self.save_action_activated)
-		self.add_action(action)
+		self.saveaction = Gio.SimpleAction.new("save", None)
+		self.saveaction.connect("activate", self.save_action_activated)
+		self.saveaction.set_enabled(False)
+		self.add_action(self.saveaction)
 
 		# An empty label will be displayed before a file has been loaded
 		empty = Gtk.Label()
@@ -162,6 +163,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def set_dirty(self, dirty):
 
 		self.dirty = dirty
+		self.saveaction.set_enabled(dirty)
 
 		self.update_title()
 
