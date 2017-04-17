@@ -65,8 +65,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		# The stack allows us to switch between application states
 		self.stack = Gtk.Stack()
-		self.stack.add_named(contents, "contents")
 		self.stack.add_named(empty, "empty")
+		self.stack.add_named(contents, "contents")
 		self.add(self.stack)
 
 		# The header bar will be displayed at all times
@@ -108,17 +108,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action = Gio.SimpleAction.new("save", None)
 		action.connect("activate", self.save_action_activated)
 		self.add_action(action)
-
-	def show_all(self):
-
-		Gtk.ApplicationWindow.show_all(self)
-
-		# XXX This is a gross hack to avoid GTK+ warnings: when the window is
-		# created, the stack will be showing the contents (TreeView) and so it
-		# will calculate it size correctly but here, right after showing the
-		# window and all its contents, we will switch back to the empty child
-		# and achieve the result we were looking for in the first place
-		self.stack.set_visible_child_name("empty")
 
 	def set_filename(self, filename):
 
