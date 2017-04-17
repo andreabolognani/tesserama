@@ -137,6 +137,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.source_uri = ""
 		self.dirty = False
 
+		self.connect("delete-event", self.delete_event)
+
 	def update_title(self):
 
 		if self.dirty:
@@ -200,6 +202,28 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			return True
 
 		return False
+
+	def close(self):
+
+		ret = True
+
+		if self.dirty:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.QUESTION,
+			                           Gtk.ButtonsType.OK_CANCEL, "Discard unsaved changes?")
+
+			# Only proceed if the user has explicitly selected the
+			# corresponding option; pressing Cancel or dismissing
+			# the dialog by pressing ESC cancel the close operation
+			if dialog.run() == Gtk.ResponseType.OK:
+				ret = False
+
+			dialog.destroy()
+
+		else:
+			# No unsaved changes
+			ret = False
+
+		return ret
 
 
 	# High-level actions
@@ -293,6 +317,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def date_cell_edited(self, renderer, path, text):
 		self.update_date(path, text)
+
+	def delete_event(self, widget, event):
+		return self.close()
 
 
 if __name__ == '__main__':
