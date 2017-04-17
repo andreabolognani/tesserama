@@ -110,12 +110,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action.connect("activate", self.save_action_activated)
 		self.add_action(action)
 
-	def set_filename(self, filename):
+	def set_data_source(self, filename, uri):
 
-		self.filename = os.path.abspath(os.path.realpath(filename))
+		self.source_filename = os.path.abspath(os.path.realpath(filename))
+		self.source_uri = uri
 
-		self.headerbar.props.title = os.path.basename(self.filename)
-		self.headerbar.props.subtitle = os.path.dirname(self.filename)
+		self.headerbar.props.title = os.path.basename(self.source_filename)
+		self.headerbar.props.subtitle = os.path.dirname(self.source_filename)
 
 	def search(self):
 
@@ -126,7 +127,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.data = Gtk.ListStore(str)
 
-		with open(self.filename, "rb") as f:
+		with open(self.source_filename, "rb") as f:
 			for line in f:
 				self.data.append([line.strip()])
 
@@ -137,9 +138,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.stack.set_visible_child_name("contents")
 
+		recents = Gtk.RecentManager.get_default()
+		recents.add_item(self.source_uri)
+
 	def save_data(self):
 
-		with open(self.filename, 'wb') as f:
+		with open(self.source_filename, 'wb') as f:
 			for item in self.data:
 				f.write(item[0] + "\n")
 
@@ -176,7 +180,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
 		if dialog.run() == Gtk.ResponseType.OK:
-			self.set_filename(dialog.get_filename())
+			self.set_data_source(dialog.get_filename(), dialog.get_uri())
 			self.load_data()
 
 		dialog.destroy()
