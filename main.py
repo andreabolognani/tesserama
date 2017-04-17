@@ -63,16 +63,18 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.treeview.set_enable_search(False)
 
 		number_renderer = Gtk.CellRendererText()
+		number_renderer.set_alignment(1.0, 0.5)
 		column = Gtk.TreeViewColumn("", number_renderer, text=self.COLUMN_NUMBER)
-		self.treeview.append_column(column)
-
-		date_renderer = Gtk.CellRendererText()
-		column = Gtk.TreeViewColumn("Date", date_renderer, text=self.COLUMN_DATE)
 		self.treeview.append_column(column)
 
 		people_renderer = Gtk.CellRendererText()
 		people_renderer.set_property("ellipsize", Pango.EllipsizeMode.END)
 		column = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
+		column.set_expand(True)
+		self.treeview.append_column(column)
+
+		date_renderer = Gtk.CellRendererText()
+		column = Gtk.TreeViewColumn("Date", date_renderer, text=self.COLUMN_DATE)
 		self.treeview.append_column(column)
 
 		scrolled = Gtk.ScrolledWindow()
