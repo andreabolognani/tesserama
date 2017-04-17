@@ -54,6 +54,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		contents.pack_start(self.searchbar, False, False, 0)
 
 		self.treeview = Gtk.TreeView()
+		self.treeview.set_enable_search(False)
 
 		renderer = Gtk.CellRendererText()
 		column = Gtk.TreeViewColumn("Text", renderer, text=0)
