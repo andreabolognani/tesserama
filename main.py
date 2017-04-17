@@ -9,7 +9,8 @@ gi.require_version('GLib', '2.0')
 gi.require_version('Gio', '2.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import GLib, Gio, Gdk, Gtk
+gi.require_version('Pango', '1.0')
+from gi.repository import GLib, Gio, Gdk, Gtk, Pango
 
 class Application(Gtk.Application):
 
@@ -61,12 +62,17 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.treeview = Gtk.TreeView()
 		self.treeview.set_enable_search(False)
 
-		renderer = Gtk.CellRendererText()
-		column = Gtk.TreeViewColumn("", renderer, text=self.COLUMN_NUMBER)
+		number_renderer = Gtk.CellRendererText()
+		column = Gtk.TreeViewColumn("", number_renderer, text=self.COLUMN_NUMBER)
 		self.treeview.append_column(column)
-		column = Gtk.TreeViewColumn("Date", renderer, text=self.COLUMN_DATE)
+
+		date_renderer = Gtk.CellRendererText()
+		column = Gtk.TreeViewColumn("Date", date_renderer, text=self.COLUMN_DATE)
 		self.treeview.append_column(column)
-		column = Gtk.TreeViewColumn("People", renderer, text=self.COLUMN_PEOPLE)
+
+		people_renderer = Gtk.CellRendererText()
+		people_renderer.set_property("ellipsize", Pango.EllipsizeMode.END)
+		column = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
 		self.treeview.append_column(column)
 
 		scrolled = Gtk.ScrolledWindow()
