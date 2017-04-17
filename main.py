@@ -42,6 +42,31 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		Gtk.ApplicationWindow.__init__(self)
 
 		self.set_default_size(800, 600)
+		self.connect("delete-event", self.delete_event)
+
+		# Internal state
+
+		self.source_filename = ""
+		self.source_uri = ""
+		self.dirty = False
+
+		# Actions
+
+		self.searchaction = Gio.SimpleAction.new_stateful("search", None, GLib.Variant.new_boolean(False))
+		self.searchaction.connect("activate", self.search_action_activated)
+		self.add_action(self.searchaction)
+
+		self.menuaction = Gio.SimpleAction.new_stateful("menu", None, GLib.Variant.new_boolean(False))
+		self.menuaction.connect("activate", self.menu_action_activated)
+		self.add_action(self.menuaction)
+
+		action = Gio.SimpleAction.new("open", None)
+		action.connect("activate", self.open_action_activated)
+		self.add_action(action)
+
+		action = Gio.SimpleAction.new("save", None)
+		action.connect("activate", self.save_action_activated)
+		self.add_action(action)
 
 		# An empty label will be displayed before a file has been loaded
 		empty = Gtk.Label()
@@ -117,31 +142,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.menupopover = Gtk.Popover.new_from_model(self.menubutton, menu)
 		self.menupopover.connect("closed", self.menu_popover_closed)
 
-		self.searchaction = Gio.SimpleAction.new_stateful("search", None, GLib.Variant.new_boolean(False))
-		self.searchaction.connect("activate", self.search_action_activated)
-		self.add_action(self.searchaction)
-
-		self.menuaction = Gio.SimpleAction.new_stateful("menu", None, GLib.Variant.new_boolean(False))
-		self.menuaction.connect("activate", self.menu_action_activated)
-		self.add_action(self.menuaction)
-
-		action = Gio.SimpleAction.new("open", None)
-		action.connect("activate", self.open_action_activated)
-		self.add_action(action)
-
-		action = Gio.SimpleAction.new("save", None)
-		action.connect("activate", self.save_action_activated)
-		self.add_action(action)
-
-		self.source_filename = ""
-		self.source_uri = ""
-		self.dirty = False
-
-		self.connect("delete-event", self.delete_event)
-
 	def update_title(self):
 
-		if self.dirty:
+		if self.is_dirty():
 				self.headerbar.props.title = "*" + os.path.basename(self.source_filename)
 		else:
 				self.headerbar.props.title = os.path.basename(self.source_filename)
@@ -160,6 +163,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.dirty = dirty
 
 		self.update_title()
+
+	def is_dirty(self):
+
+		return self.dirty
 
 	def search(self):
 
@@ -210,7 +217,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		ret = False
 
-		if self.dirty:
+		if self.is_dirty():
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.QUESTION,
 			                           Gtk.ButtonsType.OK_CANCEL, "Discard unsaved changes?")
 
@@ -227,6 +234,24 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			ret = True
 
 		return ret
+
+	def update_number(self, path, text):
+
+		if self.data[path][self.COLUMN_NUMBER] != text:
+			self.data[path][self.COLUMN_NUMBER] = text
+			self.set_dirty(True)
+
+	def update_people(self, path, text):
+
+		if self.data[path][self.COLUMN_PEOPLE] != text:
+			self.data[path][self.COLUMN_PEOPLE] = text
+			self.set_dirty(True)
+
+	def update_date(self, path, text):
+
+		if self.data[path][self.COLUMN_DATE] != text:
+			self.data[path][self.COLUMN_DATE] = text
+			self.set_dirty(True)
 
 
 	# High-level actions
@@ -272,24 +297,6 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		# False means we want to close the window, True means
 		# we don't, so we have to flip the result here
 		return not self.discard_changes_okay()
-
-	def update_number(self, path, text):
-
-		if self.data[path][self.COLUMN_NUMBER] != text:
-			self.data[path][self.COLUMN_NUMBER] = text
-			self.set_dirty(True)
-
-	def update_people(self, path, text):
-
-		if self.data[path][self.COLUMN_PEOPLE] != text:
-			self.data[path][self.COLUMN_PEOPLE] = text
-			self.set_dirty(True)
-
-	def update_date(self, path, text):
-
-		if self.data[path][self.COLUMN_DATE] != text:
-			self.data[path][self.COLUMN_DATE] = text
-			self.set_dirty(True)
 
 
 	# Signal handlers
