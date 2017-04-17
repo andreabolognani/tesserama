@@ -203,9 +203,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		return False
 
-	def close(self):
+	# Returns True if it's okay to discard changes in the current
+	# document, either because the user has confirmed by clicking
+	# the relative button or because there are none
+	def discard_changes_okay(self):
 
-		ret = True
+		ret = False
 
 		if self.dirty:
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.QUESTION,
@@ -215,13 +218,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			# corresponding option; pressing Cancel or dismissing
 			# the dialog by pressing ESC cancel the close operation
 			if dialog.run() == Gtk.ResponseType.OK:
-				ret = False
+				ret = True
 
 			dialog.destroy()
 
 		else:
 			# No unsaved changes
-			ret = False
+			ret = True
 
 		return ret
 
@@ -246,6 +249,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def open_action(self):
 
+		# Don't overwrite changes unless the user is okay with that
+		if not self.discard_changes_okay():
+			return
+
 		dialog = Gtk.FileChooserDialog("Choose a file", self, Gtk.FileChooserAction.OPEN,
 		                               (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 		                                Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -259,6 +266,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def save_action(self):
 
 		self.save_data()
+
+	def close_action(self):
+
+		# False means we want to close the window, True means
+		# we don't, so we have to flip the result here
+		return not self.discard_changes_okay()
 
 	def update_number(self, path, text):
 
@@ -319,7 +332,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.update_date(path, text)
 
 	def delete_event(self, widget, event):
-		return self.close()
+		return self.close_action()
 
 
 if __name__ == '__main__':
