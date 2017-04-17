@@ -54,6 +54,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.searchaction = Gio.SimpleAction.new_stateful("search", None, GLib.Variant.new_boolean(False))
 		self.searchaction.connect("activate", self.search_action_activated)
+		self.searchaction.set_enabled(False)
 		self.add_action(self.searchaction)
 
 		self.menuaction = Gio.SimpleAction.new_stateful("menu", None, GLib.Variant.new_boolean(False))
@@ -183,6 +184,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 				self.data.append(row[0:3])
 
 		self.set_dirty(False)
+		self.searchaction.set_enabled(True)
 
 		self.filtered_data = self.data.filter_new()
 		self.filter_needle = ""
