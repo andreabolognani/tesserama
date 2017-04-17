@@ -64,16 +64,22 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		number_renderer = Gtk.CellRendererText()
 		number_renderer.set_alignment(1.0, 0.5)
+		number_renderer.set_property("editable", True)
+		number_renderer.connect("edited", self.number_cell_edited)
 		column = Gtk.TreeViewColumn("", number_renderer, text=self.COLUMN_NUMBER)
 		self.treeview.append_column(column)
 
 		people_renderer = Gtk.CellRendererText()
 		people_renderer.set_property("ellipsize", Pango.EllipsizeMode.END)
+		people_renderer.set_property("editable", True)
+		people_renderer.connect("edited", self.people_cell_edited)
 		column = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
 		column.set_expand(True)
 		self.treeview.append_column(column)
 
 		date_renderer = Gtk.CellRendererText()
+		date_renderer.set_property("editable", True)
+		date_renderer.connect("edited", self.date_cell_edited)
 		column = Gtk.TreeViewColumn("Date", date_renderer, text=self.COLUMN_DATE)
 		self.treeview.append_column(column)
 
@@ -208,6 +214,18 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.save_data()
 
+	def update_number(self, path, text):
+
+		self.data[path][self.COLUMN_NUMBER] = text
+
+	def update_people(self, path, text):
+
+		self.data[path][self.COLUMN_PEOPLE] = text
+
+	def update_date(self, path, text):
+
+		self.data[path][self.COLUMN_DATE] = text
+
 
 	# Signal handlers
 
@@ -241,6 +259,15 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def save_action_activated(self, action, param):
 		self.save_action()
+
+	def number_cell_edited(self, renderer, path, text):
+		self.update_number(path, text)
+
+	def people_cell_edited(self, renderer, path, text):
+		self.update_people(path, text)
+
+	def date_cell_edited(self, renderer, path, text):
+		self.update_date(path, text)
 
 
 if __name__ == '__main__':
