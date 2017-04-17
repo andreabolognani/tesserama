@@ -133,13 +133,31 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		action.connect("activate", self.save_action_activated)
 		self.add_action(action)
 
+		self.source_filename = ""
+		self.source_uri = ""
+		self.dirty = False
+
+	def update_title(self):
+
+		if self.dirty:
+				self.headerbar.props.title = "*" + os.path.basename(self.source_filename)
+		else:
+				self.headerbar.props.title = os.path.basename(self.source_filename)
+
+		self.headerbar.props.subtitle = os.path.dirname(self.source_filename)
+
 	def set_data_source(self, filename, uri):
 
 		self.source_filename = os.path.abspath(os.path.realpath(filename))
 		self.source_uri = uri
 
-		self.headerbar.props.title = os.path.basename(self.source_filename)
-		self.headerbar.props.subtitle = os.path.dirname(self.source_filename)
+		self.update_title()
+
+	def set_dirty(self, dirty):
+
+		self.dirty = dirty
+
+		self.update_title()
 
 	def search(self):
 
@@ -154,6 +172,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			reader = csv.reader(f)
 			for row in reader:
 				self.data.append(row[0:3])
+
+		self.set_dirty(False)
 
 		self.filtered_data = self.data.filter_new()
 		self.filter_needle = ""
@@ -171,6 +191,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			writer = csv.writer(f)
 			for item in self.data:
 				writer.writerow([item[0], item[1], item[2]])
+
+		self.set_dirty(False)
 
 	def filter_func(self, model, iter, data):
 
@@ -217,14 +239,17 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def update_number(self, path, text):
 
 		self.data[path][self.COLUMN_NUMBER] = text
+		self.set_dirty(True)
 
 	def update_people(self, path, text):
 
 		self.data[path][self.COLUMN_PEOPLE] = text
+		self.set_dirty(True)
 
 	def update_date(self, path, text):
 
 		self.data[path][self.COLUMN_DATE] = text
+		self.set_dirty(True)
 
 
 	# Signal handlers
