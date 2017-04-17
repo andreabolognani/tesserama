@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import csv
 import os.path
 import sys
 
@@ -31,6 +32,10 @@ class Application(Gtk.Application):
 
 class ApplicationWindow(Gtk.ApplicationWindow):
 
+	COLUMN_DATE = 0
+	COLUMN_NUMBER = 1
+	COLUMN_PEOPLE = 2
+
 	def __init__(self):
 
 		Gtk.ApplicationWindow.__init__(self)
@@ -57,7 +62,11 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.treeview.set_enable_search(False)
 
 		renderer = Gtk.CellRendererText()
-		column = Gtk.TreeViewColumn("Text", renderer, text=0)
+		column = Gtk.TreeViewColumn("", renderer, text=self.COLUMN_NUMBER)
+		self.treeview.append_column(column)
+		column = Gtk.TreeViewColumn("Date", renderer, text=self.COLUMN_DATE)
+		self.treeview.append_column(column)
+		column = Gtk.TreeViewColumn("People", renderer, text=self.COLUMN_PEOPLE)
 		self.treeview.append_column(column)
 
 		scrolled = Gtk.ScrolledWindow()
@@ -125,11 +134,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def load_data(self):
 
-		self.data = Gtk.ListStore(str)
+		self.data = Gtk.ListStore(str, str, str)
 
 		with open(self.source_filename, "rb") as f:
-			for line in f:
-				self.data.append([line.strip()])
+			reader = csv.reader(f)
+			for row in reader:
+				self.data.append(row[0:3])
 
 		self.filtered_data = self.data.filter_new()
 		self.filter_needle = ""
@@ -144,12 +154,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def save_data(self):
 
 		with open(self.source_filename, 'wb') as f:
+			writer = csv.writer(f)
 			for item in self.data:
-				f.write(item[0] + "\n")
+				writer.writerow([item[0], item[1], item[2]])
 
 	def filter_func(self, model, iter, data):
 
-		if self.filter_needle in self.data[iter][0].lower():
+		if self.filter_needle in self.data[iter][self.COLUMN_PEOPLE].lower():
 			return True
 
 		return False
