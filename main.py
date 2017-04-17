@@ -275,18 +275,21 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def update_number(self, path, text):
 
-		self.data[path][self.COLUMN_NUMBER] = text
-		self.set_dirty(True)
+		if self.data[path][self.COLUMN_NUMBER] != text:
+			self.data[path][self.COLUMN_NUMBER] = text
+			self.set_dirty(True)
 
 	def update_people(self, path, text):
 
-		self.data[path][self.COLUMN_PEOPLE] = text
-		self.set_dirty(True)
+		if self.data[path][self.COLUMN_PEOPLE] != text:
+			self.data[path][self.COLUMN_PEOPLE] = text
+			self.set_dirty(True)
 
 	def update_date(self, path, text):
 
-		self.data[path][self.COLUMN_DATE] = text
-		self.set_dirty(True)
+		if self.data[path][self.COLUMN_DATE] != text:
+			self.data[path][self.COLUMN_DATE] = text
+			self.set_dirty(True)
 
 
 	# Signal handlers
