@@ -129,14 +129,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def search(self):
 
-		filtered = Gtk.ListStore(str)
-		needle = self.searchentry.get_text().lower()
-
-		for item in self.data:
-			if needle in item[0].lower():
-				filtered.append([item[0]])
-
-		self.treeview.set_model(filtered)
+		self.filter_needle = self.searchentry.get_text().lower()
+		self.filtered_data.refilter()
 
 	def load_data(self):
 
@@ -146,7 +140,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			for line in f:
 				self.data.append([line.strip()])
 
-		self.treeview.set_model(self.data)
+		self.filtered_data = self.data.filter_new()
+		self.filter_needle = ""
+		self.filtered_data.set_visible_func(self.filter_func)
+		self.treeview.set_model(self.filtered_data)
 
 		self.stack.set_visible_child_name("contents")
 
@@ -155,6 +152,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		with open(self.filename, 'wb') as f:
 			for item in self.data:
 				f.write(item[0] + "\n")
+
+	def filter_func(self, model, iter, data):
+
+		if self.filter_needle in self.data[iter][0].lower():
+			return True
+
+		return False
 
 
 	# High-level actions
