@@ -298,7 +298,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		fresh[self.COLUMN_NUMBER] = str(number)
 		fresh[self.COLUMN_DATE] = datetime.date.today().strftime("%d/%m/%y")
 
-		self.data.append(fresh)
+		# Insert the fresh data and scroll to it
+		cell = self.data.append(fresh)
+		self.treeview.scroll_to_cell(self.data.get_path(cell), None, False, 0.0, 0.0)
 
 	def start_menu_action(self):
 
