@@ -278,7 +278,20 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		return ret
 
+	def convert_path(self, path):
+
+		# Since we use filtering on the data displayed in the
+		# treeview, we have to convert paths from the filtered
+		# model to the actual model before using them
+		tmp = Gtk.TreePath.new_from_string(path)
+		tmp = self.filtered_data.convert_path_to_child_path(tmp)
+		path = str(tmp)
+
+		return path
+
 	def update_number(self, path, text):
+
+		path = self.convert_path(path)
 
 		if self.data[path][self.COLUMN_NUMBER] != text:
 			self.data[path][self.COLUMN_NUMBER] = text
@@ -286,11 +299,15 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def update_people(self, path, text):
 
+		path = self.convert_path(path)
+
 		if self.data[path][self.COLUMN_PEOPLE] != text:
 			self.data[path][self.COLUMN_PEOPLE] = text
 			self.set_dirty(True)
 
 	def update_date(self, path, text):
+
+		path = self.convert_path(path)
 
 		if self.data[path][self.COLUMN_DATE] != text:
 			self.data[path][self.COLUMN_DATE] = text
