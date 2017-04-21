@@ -352,6 +352,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def stop_search(self, entry):
 		self.searchaction.set_state(GLib.Variant.new_boolean(False))
+		# A bit redundant, but guarantees we perform the same teardown
+		# steps regardless of how the search has been interrupted
+		self.stop_search_action()
 
 	def insert_action_activated(self, action, param):
 		self.insert_action()
