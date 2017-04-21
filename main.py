@@ -277,10 +277,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def start_search_action(self):
 
 		self.searchbar.set_search_mode(True)
+		self.insertaction.set_enabled(False)
 
 	def stop_search_action(self):
 
 		self.searchbar.set_search_mode(False)
+		self.insertaction.set_enabled(True)
 
 	def insert_action(self):
 
