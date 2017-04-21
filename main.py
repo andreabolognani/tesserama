@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import csv
+import datetime
 import os.path
 import sys
 
@@ -19,6 +20,7 @@ class Application(Gtk.Application):
 		Gtk.Application.__init__(self)
 
 		self.set_accels_for_action("win.search", ["<Ctrl>f"])
+		self.set_accels_for_action("win.insert", ["<Ctrl>i"])
 		self.set_accels_for_action("win.open", ["<Ctrl>o"])
 		self.set_accels_for_action("win.save", ["<Ctrl>s"])
 
@@ -56,6 +58,11 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchaction.connect("activate", self.search_action_activated)
 		self.searchaction.set_enabled(False)
 		self.add_action(self.searchaction)
+
+		self.insertaction = Gio.SimpleAction.new("insert", None)
+		self.insertaction.connect("activate", self.insert_action_activated)
+		self.insertaction.set_enabled(False)
+		self.add_action(self.insertaction)
 
 		self.menuaction = Gio.SimpleAction.new_stateful("menu", None, GLib.Variant.new_boolean(False))
 		self.menuaction.connect("activate", self.menu_action_activated)
@@ -131,6 +138,10 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		self.searchbutton.set_action_name("win.search")
 		self.headerbar.pack_start(self.searchbutton)
 
+		self.insertbutton = Gtk.Button("Insert")
+		self.insertbutton.set_action_name("win.insert")
+		self.headerbar.pack_start(self.insertbutton)
+
 		self.menubutton = Gtk.ToggleButton()
 		self.menubutton.set_image(Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.BUTTON))
 		self.menubutton.set_tooltip_text("Menu")
@@ -188,6 +199,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.set_dirty(False)
 		self.searchaction.set_enabled(True)
+		self.insertaction.set_enabled(True)
 
 		self.filtered_data = self.data.filter_new()
 		self.filter_needle = ""
@@ -270,6 +282,24 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		self.searchbar.set_search_mode(False)
 
+	def insert_action(self):
+
+		number = 1
+		for item in self.data:
+			try:
+				number = max(number, int(item[self.COLUMN_NUMBER]) + 1)
+			except ValueError:
+				# Invalid values are ignored
+				pass
+
+		# Fill in some sensible data: the next number in the
+		# sequence and today's date
+		fresh = ["", "", ""]
+		fresh[self.COLUMN_NUMBER] = str(number)
+		fresh[self.COLUMN_DATE] = datetime.date.today().strftime("%d/%m/%y")
+
+		self.data.append(fresh)
+
 	def start_menu_action(self):
 
 		self.menupopover.popup()
@@ -320,6 +350,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def stop_search(self, entry):
 		self.searchaction.set_state(GLib.Variant.new_boolean(False))
+
+	def insert_action_activated(self, action, param):
+		self.insert_action()
 
 	def menu_action_activated(self, action, param):
 		state = not self.menuaction.get_state().get_boolean()
