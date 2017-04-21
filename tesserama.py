@@ -36,6 +36,8 @@ class Application(Gtk.Application):
 
 		Gtk.Application.__init__(self)
 
+		GLib.set_application_name("Tesserama")
+
 		self.set_accels_for_action("win.search", ["<Ctrl>f"])
 		self.set_accels_for_action("win.insert", ["<Ctrl>i"])
 		self.set_accels_for_action("win.open", ["<Ctrl>o"])
@@ -59,6 +61,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	def __init__(self):
 
 		Gtk.ApplicationWindow.__init__(self)
+
+		# Though formally deprecated, set_wmclass() seems to be the only way
+		# to reliably convince GNOME Shell to display the proper application
+		# name in the topbar instead of "tesserama.py", so it's staying :)
+		self.set_wmclass("Tesserama", "Tesserama")
+		self.set_title("Tesserama")
 
 		self.set_default_size(800, 600)
 		self.connect("delete-event", self.delete_event)
