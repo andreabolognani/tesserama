@@ -183,7 +183,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		with open(self.source_filename, "rb") as f:
 			reader = csv.reader(f)
 			for row in reader:
-				self.data.append(row[0:3])
+				if row[self.COLUMN_PEOPLE] != "":
+					self.data.append(row[0:3])
 
 		self.set_dirty(False)
 		self.searchaction.set_enabled(True)
@@ -203,7 +204,8 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		with open(self.source_filename, 'wb') as f:
 			writer = csv.writer(f)
 			for item in self.data:
-				writer.writerow([item[0], item[1], item[2]])
+				if item[self.COLUMN_PEOPLE] != "":
+					writer.writerow([item[0], item[1], item[2]])
 
 		self.set_dirty(False)
 
