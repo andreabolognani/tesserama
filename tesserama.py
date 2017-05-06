@@ -248,8 +248,17 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def filter_func(self, model, iter, data):
 
-		if self.filter_needle in self.data[iter][self.COLUMN_PEOPLE].lower():
-			return True
+		try:
+			# If the needle can be converted to a number, we look up
+			# the corresponding record
+			int(self.filter_needle)
+			if self.filter_needle == self.data[iter][self.COLUMN_NUMBER]:
+				return True
+		except ValueError:
+			# In all other cases, we perform a case-insensitive substring
+			# search among people's names
+			if self.filter_needle in self.data[iter][self.COLUMN_PEOPLE].lower():
+				return True
 
 		return False
 
