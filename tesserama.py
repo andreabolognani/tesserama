@@ -348,11 +348,11 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def start_menu_action(self):
 
-		self.menupopover.popup()
+		self.menupopover.show()
 
 	def stop_menu_action(self):
 
-		self.menupopover.popdown()
+		self.menupopover.hide()
 
 	def open_action(self):
 
