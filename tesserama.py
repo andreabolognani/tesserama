@@ -133,9 +133,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		people_renderer.set_property("ellipsize", Pango.EllipsizeMode.END)
 		people_renderer.set_property("editable", True)
 		people_renderer.connect("edited", self.people_cell_edited)
-		column = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
-		column.set_expand(True)
-		self.treeview.append_column(column)
+		self.peoplecolumn = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
+		self.peoplecolumn.set_expand(True)
+		self.treeview.append_column(self.peoplecolumn)
 
 		signature_renderer = Gtk.CellRendererText()
 		signature_renderer.set_property("editable", True)
@@ -369,7 +369,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		# Insert the fresh data and scroll to it
 		cell = self.data.append(fresh)
-		self.treeview.scroll_to_cell(self.data.get_path(cell), None, False, 0.0, 0.0)
+		path = self.data.get_path(cell)
+		self.treeview.scroll_to_cell(path, None, False, 0.0, 0.0)
+
+		# Start editing right away. We need to do this inside a idle function
+		# because otherwise weird rendering glitches will start popping up
+		GLib.idle_add(lambda: self.treeview.set_cursor(path, self.peoplecolumn, True))
 
 	def start_menu_action(self):
 
