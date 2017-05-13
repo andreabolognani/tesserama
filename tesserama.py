@@ -57,6 +57,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	COLUMN_DATE = 0
 	COLUMN_NUMBER = 1
 	COLUMN_PEOPLE = 2
+	COLUMN_SIGNATURE = 3
 
 	def __init__(self):
 
@@ -134,6 +135,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		people_renderer.connect("edited", self.people_cell_edited)
 		column = Gtk.TreeViewColumn("People", people_renderer, text=self.COLUMN_PEOPLE)
 		column.set_expand(True)
+		self.treeview.append_column(column)
+
+		signature_renderer = Gtk.CellRendererText()
+		signature_renderer.set_property("editable", True)
+		signature_renderer.connect("edited", self.signature_cell_edited)
+		column = Gtk.TreeViewColumn("Signature", signature_renderer, text=self.COLUMN_SIGNATURE)
+		column.set_sizing(Gtk.TreeViewColumnSizing.GROW_ONLY)
 		self.treeview.append_column(column)
 
 		date_renderer = Gtk.CellRendererText()
@@ -214,13 +222,13 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def load_data(self):
 
-		self.data = Gtk.ListStore(str, str, str)
+		self.data = Gtk.ListStore(str, str, str, str)
 
 		with open(self.source_filename, "rb") as f:
 			reader = csv.reader(f)
 			for row in reader:
 				if row[self.COLUMN_PEOPLE] != "":
-					self.data.append(row[0:3])
+					self.data.append(row[0:4])
 
 		self.set_dirty(False)
 		self.searchaction.set_enabled(True)
@@ -242,7 +250,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			writer = csv.writer(f)
 			for item in self.data:
 				if item[self.COLUMN_PEOPLE] != "":
-					writer.writerow([item[0], item[1], item[2]])
+					writer.writerow([item[0], item[1], item[2], item[3]])
 
 		self.set_dirty(False)
 
@@ -314,6 +322,14 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 			self.data[path][self.COLUMN_PEOPLE] = text
 			self.set_dirty(True)
 
+	def update_signature(self, path, text):
+
+		path = self.convert_path(path)
+
+		if self.data[path][self.COLUMN_SIGNATURE] != text:
+			self.data[path][self.COLUMN_SIGNATURE] = text
+			self.set_dirty(True)
+
 	def update_date(self, path, text):
 
 		path = self.convert_path(path)
@@ -347,7 +363,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 		# Fill in some sensible data: the next number in the
 		# sequence and today's date
-		fresh = ["", "", ""]
+		fresh = ["", "", "", ""]
 		fresh[self.COLUMN_NUMBER] = str(number)
 		fresh[self.COLUMN_DATE] = datetime.date.today().strftime("%d/%m/%y")
 
@@ -434,6 +450,9 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 
 	def people_cell_edited(self, renderer, path, text):
 		self.update_people(path, text)
+
+	def signature_cell_edited(self, renderer, path, text):
+		self.update_signature(path, text)
 
 	def date_cell_edited(self, renderer, path, text):
 		self.update_date(path, text)
