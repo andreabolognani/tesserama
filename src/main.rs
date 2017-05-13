@@ -3,11 +3,25 @@ extern crate gtk;
 
 use gtk::prelude::*;
 
-fn main() {
-	let argc: i32 = 0;
-	let argv: &[&str] = &[];
+struct Tesserama {
+	app: gtk::Application,
+}
 
-	let app = gtk::Application::new(None, gio::APPLICATION_FLAGS_NONE).unwrap();
-	app.connect_activate(|_| {});
-	app.run(argc, argv);
+impl Tesserama {
+	fn new() -> Self {
+		let flags = gio::ApplicationFlags::empty();
+		let app = gtk::Application::new(None, flags).unwrap();
+		app.connect_activate(|_| {});
+		Tesserama { app: app }
+	}
+
+	fn run(&self) -> i32 {
+		let argc: i32 = 0;
+		let argv: &[&str] = &[];
+		self.app.run(argc, argv)
+	}
+}
+
+fn main() {
+	Tesserama::new().run();
 }
