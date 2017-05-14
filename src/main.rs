@@ -16,8 +16,12 @@ impl Tesserama {
 	}
 
 	fn run(&self) -> i32 {
-		let argc: i32 = 0;
-		let argv: &[&str] = &[];
+		let args: Vec<String> = std::env::args().collect();
+		let args: Vec<&str> = args.iter().map(|s| s.as_ref()).collect();
+
+		let argc: i32 = args.len() as i32;
+		let argv: &[&str] = &args;
+
 		self.app.run(argc, argv)
 	}
 }
