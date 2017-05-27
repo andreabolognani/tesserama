@@ -1,9 +1,10 @@
 [Desktop Entry]
-Encoding=UTF-8
+Version=1.1
 Name=Tesserama
-_GenericName=Membership cards manager
-TryExec=tesserama
-Exec=tesserama
-Terminal=false
+GenericName=Membership cards manager
 Type=Application
-Categories=GTK;
+Terminal=false
+Exec=tesserama
+TryExec=tesserama
+Categories=Office;ContactManagement;GTK;GNOME;
+MimeType=text/csv;
