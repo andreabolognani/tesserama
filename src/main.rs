@@ -8,11 +8,15 @@ struct Tesserama {
 }
 
 impl Tesserama {
-	fn new() -> Self {
+	fn new() -> Result<Self, ()> {
 		let flags = gio::ApplicationFlags::empty();
-		let app = gtk::Application::new(None, flags).unwrap();
-		app.connect_activate(|_| {});
-		Tesserama { app: app }
+		match gtk::Application::new(None, flags) {
+			Ok(app) => {
+				app.connect_activate(|_| {});
+				Ok(Tesserama { app: app })
+			}
+			Err(_) => Err(())
+		}
 	}
 
 	fn run(&self) -> i32 {
@@ -27,5 +31,12 @@ impl Tesserama {
 }
 
 fn main() {
-	Tesserama::new().run();
+	match Tesserama::new() {
+		Ok(value) => {
+			value.run();
+		}
+		Err(_) => {
+			println!("GTK+ initialization error");
+		}
+	}
 }
