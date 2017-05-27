@@ -59,6 +59,7 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 	COLUMN_PEOPLE = 2
 	COLUMN_SIGNATURE = 3
 	COLUMN_FLAGS = 4
+	COLUMN_LAST = COLUMN_FLAGS
 
 	def __init__(self):
 
@@ -236,8 +237,12 @@ class ApplicationWindow(Gtk.ApplicationWindow):
 		with open(self.source_filename, "rb") as f:
 			reader = csv.reader(f)
 			for row in reader:
-				if row[self.COLUMN_PEOPLE] != "":
-					self.data.append(row[0:5])
+				if len(row) <= self.COLUMN_PEOPLE or row[self.COLUMN_PEOPLE] == "":
+					continue
+				# Pad short rows, eg. files created using older versions
+				while len(row) <= self.COLUMN_LAST:
+					row.append("")
+				self.data.append(row)
 
 		self.set_dirty(False)
 		self.searchaction.set_enabled(True)
