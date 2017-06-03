@@ -46,16 +46,21 @@ impl Application {
 #[derive(Clone)]
 struct Window {
 	parent: gtk::ApplicationWindow,
+	headerbar: gtk::HeaderBar,
 }
 
 impl Window {
 	fn new(app: &Application) -> Self {
 		let ret = Window {
 			parent: app.create_window(),
+			headerbar: gtk::HeaderBar::new(),
 		};
 
 		ret.parent.set_title("Tesserama");
 		ret.parent.set_default_size(800, 600);
+
+		ret.headerbar.set_show_close_button(true);
+		ret.parent.set_titlebar(&ret.headerbar);
 
 		ret
 	}
