@@ -11,23 +11,17 @@ struct Application {
 impl Application {
 	fn new() -> Self {
 		let flags = gio::ApplicationFlags::empty();
-		match gtk::Application::new(None, flags) {
-			Ok(parent) => {
-				let ret = Application {
-					parent: parent,
-				};
+		let ret = Application {
+			parent: gtk::Application::new(None, flags)
+			        .expect("GTK+ initialization error"),
+		};
 
-				let ret_clone = ret.clone();
-				ret.parent.connect_activate(move |_| {
-					ret_clone.activate();
-				});
+		let ret_clone = ret.clone();
+		ret.parent.connect_activate(move |_| {
+			ret_clone.activate();
+		});
 
-				ret
-			}
-			Err(_) => {
-				panic!("GTK+ initialization error");
-			}
-		}
+		ret
 	}
 
 	fn run(&self) {
