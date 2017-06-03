@@ -49,6 +49,9 @@ impl Application {
 struct Window {
 	parent: gtk::ApplicationWindow,
 	headerbar: gtk::HeaderBar,
+	searchbutton: gtk::ToggleButton,
+	insertbutton: gtk::Button,
+	menubutton: gtk::ToggleButton,
 }
 
 impl Window {
@@ -56,6 +59,9 @@ impl Window {
 		let ret = Window {
 			parent: app.create_window(),
 			headerbar: gtk::HeaderBar::new(),
+			searchbutton: gtk::ToggleButton::new(),
+			insertbutton: gtk::Button::new_with_label("Insert"),
+			menubutton: gtk::ToggleButton::new(),
 		};
 		ret.setup();
 		ret
@@ -67,6 +73,27 @@ impl Window {
 
 		self.headerbar.set_show_close_button(true);
 		self.parent.set_titlebar(&self.headerbar);
+
+		let image = gtk::Image::new_from_icon_name(
+			"edit-find-symbolic",
+			gtk::IconSize::Button.into(),
+		);
+		self.searchbutton.set_image(&image);
+		self.searchbutton.set_tooltip_text("Search");
+		self.searchbutton.set_action_name("win.search");
+		self.headerbar.pack_start(&self.searchbutton);
+
+		self.insertbutton.set_action_name("win.insert");
+		self.headerbar.pack_start(&self.insertbutton);
+
+		let image = gtk::Image::new_from_icon_name(
+			"open-menu-symbolic",
+			gtk::IconSize::Button.into(),
+		);
+		self.menubutton.set_image(&image);
+		self.menubutton.set_tooltip_text("Menu");
+		self.menubutton.set_action_name("win.menu");
+		self.headerbar.pack_end(&self.menubutton);
 	}
 
 	fn show_all(&self) {
