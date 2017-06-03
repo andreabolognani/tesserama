@@ -15,13 +15,15 @@ impl Application {
 			parent: gtk::Application::new(None, flags)
 			        .expect("GTK+ initialization error"),
 		};
-
-		let ret_clone = ret.clone();
-		ret.parent.connect_activate(move |_| {
-			ret_clone.activate();
-		});
-
+		ret.setup();
 		ret
+	}
+
+	fn setup(&self) {
+		let _self = self.clone();
+		self.parent.connect_activate(move |_| {
+			_self.activate();
+		});
 	}
 
 	fn run(&self) {
@@ -55,14 +57,16 @@ impl Window {
 			parent: app.create_window(),
 			headerbar: gtk::HeaderBar::new(),
 		};
-
-		ret.parent.set_title("Tesserama");
-		ret.parent.set_default_size(800, 600);
-
-		ret.headerbar.set_show_close_button(true);
-		ret.parent.set_titlebar(&ret.headerbar);
-
+		ret.setup();
 		ret
+	}
+
+	fn setup(&self) {
+		self.parent.set_title("Tesserama");
+		self.parent.set_default_size(800, 600);
+
+		self.headerbar.set_show_close_button(true);
+		self.parent.set_titlebar(&self.headerbar);
 	}
 
 	fn show_all(&self) {
