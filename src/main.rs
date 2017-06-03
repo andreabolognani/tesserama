@@ -53,7 +53,10 @@ impl Window {
 		let ret = Window {
 			parent: app.create_window(),
 		};
+
 		ret.parent.set_title("Tesserama");
+		ret.parent.set_default_size(800, 600);
+
 		ret
 	}
 
