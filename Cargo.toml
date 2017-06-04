@@ -3,6 +3,10 @@ name = "tesserama"
 version = "0.1.0"
 authors = ["Andrea Bolognani <eof@kiyuko.org>"]
 
+[dependencies.glib]
+version = "0.1.3"
+features = ["v2_48"]
+
 [dependencies.gio]
 version = "0.1.3"
 features = ["v2_48"]
