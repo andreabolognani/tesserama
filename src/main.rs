@@ -22,7 +22,7 @@ impl Application {
 	fn setup(&self) {
 		let _self = self.clone();
 		self.parent.connect_activate(move |_| {
-			_self.activate();
+			_self.activate_action();
 		});
 	}
 
@@ -40,7 +40,7 @@ impl Application {
 		gtk::ApplicationWindow::new(&self.parent)
 	}
 
-	fn activate(&self) {
+	fn activate_action(&self) {
 		Window::new(&self).show_all();
 	}
 }
