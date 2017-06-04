@@ -4,11 +4,14 @@ extern crate gtk;
 
 use std::cell::RefCell;
 use std::ffi::OsStr;
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
 use gtk::prelude::*;
+use std::io::prelude::*;
 
 #[derive(Clone)]
 struct Application {
@@ -233,18 +236,18 @@ impl Window {
 			*data = gtk::ListStore::new(&[gtk::Type::String]);
 		}
 
-		/* Inject some dummy data into the treeview */
-
 		let data: &gtk::ListStore = &*self.data.borrow();
+		let path: &PathBuf = &*self.source_filename.borrow();
 
-		let iter = data.append();
-		data.set(&iter, &[0], &[&String::from("here")]);
-		let iter = data.append();
-		data.set(&iter, &[0], &[&String::from("have")]);
-		let iter = data.append();
-		data.set(&iter, &[0], &[&String::from("some")]);
-		let iter = data.append();
-		data.set(&iter, &[0], &[&String::from("text")]);
+		let file = File::open(path).expect("Failed to open file");
+		let reader = BufReader::new(file);
+
+		for line in reader.lines() {
+			if line.is_ok() {
+				let iter = data.append();
+				data.set(&iter, &[0], &[&line.unwrap()]);
+			}
+		}
 
 		self.treeview.set_model(data);
 
