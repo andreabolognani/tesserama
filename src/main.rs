@@ -100,7 +100,6 @@ impl Window {
 	}
 
 	fn setup(&self) {
-		self.parent.set_title("Tesserama");
 		self.parent.set_default_size(800, 600);
 
 		/* Actions */
