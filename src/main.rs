@@ -2,6 +2,10 @@ extern crate glib;
 extern crate gio;
 extern crate gtk;
 
+use std::cell::RefCell;
+use std::path::PathBuf;
+use std::rc::Rc;
+
 use gtk::prelude::*;
 
 #[derive(Clone)]
@@ -63,6 +67,8 @@ struct Window {
 	menuaction: gio::SimpleAction,
 	openaction: gio::SimpleAction,
 	saveaction: gio::SimpleAction,
+	source_filename: Rc<RefCell<PathBuf>>,
+	source_uri: Rc<RefCell<String>>,
 }
 
 impl Window {
@@ -86,6 +92,8 @@ impl Window {
 			),
 			openaction: gio::SimpleAction::new("open", None),
 			saveaction: gio::SimpleAction::new("save", None),
+			source_filename: Rc::new(RefCell::new(PathBuf::new())),
+			source_uri: Rc::new(RefCell::new(String::new())),
 		};
 		ret.setup();
 		ret
@@ -161,6 +169,31 @@ impl Window {
 		self.parent.show_all();
 	}
 
+	fn update_title(&self) {
+		{
+			let title: &PathBuf = &*self.source_filename.borrow();
+			let title: &str = title.to_str().unwrap();
+			self.headerbar.set_title(Some(title));
+		}
+		{
+			let subtitle: &str = &*self.source_uri.borrow();
+			self.headerbar.set_subtitle(Some(subtitle));
+		}
+	}
+
+	fn set_data_source(&self, filename: PathBuf, uri: String) {
+		{
+			let mut source_filename = self.source_filename.borrow_mut();
+			*source_filename = filename;
+		}
+		{
+			let mut source_uri = self.source_uri.borrow_mut();
+			*source_uri = uri;
+		}
+
+		self.update_title();
+	}
+
 	fn search_action_activated(&self) {
 	}
 
@@ -180,7 +213,12 @@ impl Window {
 		dialog.add_button("Open", gtk::ResponseType::Ok.into());
 
 		if dialog.run() == gtk::ResponseType::Ok.into() {
-			println!("{:?}", dialog.get_uri());
+			let filename = dialog.get_filename();
+			let uri = dialog.get_uri();
+
+			if filename.is_some() && uri.is_some() {
+				self.set_data_source(filename.unwrap(), uri.unwrap());
+			}
 		}
 
 		dialog.destroy();
