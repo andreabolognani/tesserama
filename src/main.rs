@@ -171,6 +171,19 @@ impl Window {
 	}
 
 	fn open_action_activated(&self) {
+		let dialog = gtk::FileChooserDialog::new(
+			Some("Choose a file"),
+			Some(&self.parent),
+			gtk::FileChooserAction::Open,
+		);
+		dialog.add_button("Cancel", gtk::ResponseType::Cancel.into());
+		dialog.add_button("Open", gtk::ResponseType::Ok.into());
+
+		if dialog.run() == gtk::ResponseType::Ok.into() {
+			println!("{:?}", dialog.get_uri());
+		}
+
+		dialog.destroy();
 	}
 
 	fn save_action_activated(&self) {
