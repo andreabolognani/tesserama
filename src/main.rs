@@ -3,6 +3,8 @@ extern crate gio;
 extern crate gtk;
 
 use std::cell::RefCell;
+use std::ffi::OsStr;
+use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
@@ -169,15 +171,16 @@ impl Window {
 	}
 
 	fn update_title(&self) {
-		{
-			let title: &PathBuf = &*self.source_filename.borrow();
-			let title: &str = title.to_str().unwrap();
-			self.headerbar.set_title(Some(title));
-		}
-		{
-			let subtitle: &str = &*self.source_uri.borrow();
-			self.headerbar.set_subtitle(Some(subtitle));
-		}
+		let source_filename: &PathBuf = &*self.source_filename.borrow();
+
+		let title: &OsStr = source_filename.file_name().unwrap();
+		let title: Option<&str> = title.to_str();
+
+		let subtitle: &Path = source_filename.parent().unwrap();
+		let subtitle: Option<&str> = subtitle.to_str();
+
+		self.headerbar.set_title(title);
+		self.headerbar.set_subtitle(subtitle);
 	}
 
 	fn set_data_source(&self, filename: PathBuf, uri: String) {
