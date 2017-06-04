@@ -64,6 +64,8 @@ struct Window {
 	searchbutton: gtk::ToggleButton,
 	insertbutton: gtk::Button,
 	menubutton: gtk::ToggleButton,
+	stack: gtk::Stack,
+	treeview: gtk::TreeView,
 	searchaction: gio::SimpleAction,
 	insertaction: gio::SimpleAction,
 	menuaction: gio::SimpleAction,
@@ -81,6 +83,8 @@ impl Window {
 			searchbutton: gtk::ToggleButton::new(),
 			insertbutton: gtk::Button::new_with_label("Insert"),
 			menubutton: gtk::ToggleButton::new(),
+			stack: gtk::Stack::new(),
+			treeview: gtk::TreeView::new(),
 			searchaction: gio::SimpleAction::new_stateful(
 				"search",
 				None,
@@ -164,6 +168,31 @@ impl Window {
 		self.menubutton.set_tooltip_text("Menu");
 		self.menubutton.set_action_name("win.menu");
 		self.headerbar.pack_end(&self.menubutton);
+
+		/* Empty application */
+
+		let empty = gtk::Label::new("");
+
+		/* Application contents */
+
+		let contents = gtk::Box::new(gtk::Orientation::Vertical, 0);
+
+		let renderer = gtk::CellRendererText::new();
+		let column = gtk::TreeViewColumn::new();
+		column.set_title("Text");
+		column.pack_start(&renderer, false);
+		column.add_attribute(&renderer, "text", 0);
+		column.set_expand(true);
+		self.treeview.append_column(&column);
+
+		let scrolled = gtk::ScrolledWindow::new(None, None);
+		scrolled.add(&self.treeview);
+
+		contents.pack_start(&scrolled, true, true, 0);
+
+		self.stack.add_named(&empty, "empty");
+		self.stack.add_named(&contents, "contents");
+		self.parent.add(&self.stack);
 	}
 
 	fn show_all(&self) {
@@ -196,6 +225,24 @@ impl Window {
 		self.update_title();
 	}
 
+	fn load_data(&self) {
+		let data = gtk::ListStore::new(&[gtk::Type::String]);
+
+		/* Inject some dummy data into the treeview */
+		let iter = data.append();
+		data.set(&iter, &[0], &[&String::from("here")]);
+		let iter = data.append();
+		data.set(&iter, &[0], &[&String::from("have")]);
+		let iter = data.append();
+		data.set(&iter, &[0], &[&String::from("some")]);
+		let iter = data.append();
+		data.set(&iter, &[0], &[&String::from("text")]);
+
+		self.treeview.set_model(&data);
+
+		self.stack.set_visible_child_name("contents");
+	}
+
 	fn search_action_activated(&self) {
 	}
 
@@ -220,6 +267,7 @@ impl Window {
 
 			if filename.is_some() && uri.is_some() {
 				self.set_data_source(filename.unwrap(), uri.unwrap());
+				self.load_data();
 			}
 		}
 
