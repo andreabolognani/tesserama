@@ -73,6 +73,7 @@ struct Window {
 	saveaction: gio::SimpleAction,
 	source_filename: Rc<RefCell<PathBuf>>,
 	source_uri: Rc<RefCell<String>>,
+	data: Rc<RefCell<gtk::ListStore>>,
 }
 
 impl Window {
@@ -100,6 +101,7 @@ impl Window {
 			saveaction: gio::SimpleAction::new("save", None),
 			source_filename: Rc::new(RefCell::new(PathBuf::new())),
 			source_uri: Rc::new(RefCell::new(String::new())),
+			data: Rc::new(RefCell::new(gtk::ListStore::new(&[gtk::Type::String]))),
 		};
 		ret.setup();
 		ret
@@ -226,9 +228,15 @@ impl Window {
 	}
 
 	fn load_data(&self) {
-		let data = gtk::ListStore::new(&[gtk::Type::String]);
+		{
+			let mut data = self.data.borrow_mut();
+			*data = gtk::ListStore::new(&[gtk::Type::String]);
+		}
 
 		/* Inject some dummy data into the treeview */
+
+		let data: &gtk::ListStore = &*self.data.borrow();
+
 		let iter = data.append();
 		data.set(&iter, &[0], &[&String::from("here")]);
 		let iter = data.append();
@@ -238,7 +246,7 @@ impl Window {
 		let iter = data.append();
 		data.set(&iter, &[0], &[&String::from("text")]);
 
-		self.treeview.set_model(&data);
+		self.treeview.set_model(data);
 
 		self.stack.set_visible_child_name("contents");
 	}
