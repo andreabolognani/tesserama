@@ -1,17 +1,15 @@
 extern crate glib;
 extern crate gio;
 extern crate gtk;
+extern crate csv;
 
 use std::cell::RefCell;
 use std::ffi::OsStr;
-use std::fs::File;
-use std::io::BufReader;
 use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
 use gtk::prelude::*;
-use std::io::prelude::*;
 
 #[derive(Clone)]
 struct Application {
@@ -239,13 +237,22 @@ impl Window {
 		let data: &gtk::ListStore = &*self.data.borrow();
 		let path: &PathBuf = &*self.source_filename.borrow();
 
-		let file = File::open(path).expect("Failed to open file");
-		let reader = BufReader::new(file);
+		let mut reader = csv::ReaderBuilder::new()
+		                 .has_headers(false)
+		                 .from_path(path)
+		                 .expect("Failed to open file");
 
-		for line in reader.lines() {
-			if line.is_ok() {
+		for record in reader.records() {
+			if record.is_ok() {
+				let record: csv::StringRecord = record.unwrap();
+
+				// Convert the record to a format gtk::ListStore likes
+				let record: [&glib::ToValue; 1] = [
+					&String::from(&record[0]),
+				];
+
 				let iter = data.append();
-				data.set(&iter, &[0], &[&line.unwrap()]);
+				data.set(&iter, &[0], &record);
 			}
 		}
 
