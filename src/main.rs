@@ -58,6 +58,10 @@ impl Application {
 	}
 }
 
+const RECORD_TYPES: [gtk::Type; 1] = [
+	gtk::Type::String,
+];
+
 #[derive(Clone)]
 struct Window {
 	parent: gtk::ApplicationWindow,
@@ -102,7 +106,7 @@ impl Window {
 			saveaction: gio::SimpleAction::new("save", None),
 			source_filename: Rc::new(RefCell::new(PathBuf::new())),
 			source_uri: Rc::new(RefCell::new(String::new())),
-			data: Rc::new(RefCell::new(gtk::ListStore::new(&[gtk::Type::String]))),
+			data: Rc::new(RefCell::new(gtk::ListStore::new(&RECORD_TYPES))),
 		};
 		ret.setup();
 		ret
@@ -231,7 +235,7 @@ impl Window {
 	fn load_data(&self) {
 		{
 			let mut data = self.data.borrow_mut();
-			*data = gtk::ListStore::new(&[gtk::Type::String]);
+			*data = gtk::ListStore::new(&RECORD_TYPES);
 		}
 
 		let data: &gtk::ListStore = &*self.data.borrow();
