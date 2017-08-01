@@ -1,5 +1,6 @@
 extern crate glib;
 extern crate gio;
+extern crate pango;
 extern crate gtk;
 extern crate csv;
 
@@ -196,6 +197,7 @@ impl Window {
 
 		let renderer = gtk::CellRendererText::new();
 		let column = gtk::TreeViewColumn::new();
+		renderer.set_property_ellipsize(pango::EllipsizeMode::End);
 		column.set_title("People");
 		column.set_expand(true);
 		column.pack_start(&renderer, false);
