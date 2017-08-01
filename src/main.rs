@@ -58,7 +58,11 @@ impl Application {
 	}
 }
 
-const RECORD_TYPES: [gtk::Type; 1] = [
+const RECORD_TYPES: [gtk::Type; 5] = [
+	gtk::Type::String,
+	gtk::Type::String,
+	gtk::Type::String,
+	gtk::Type::String,
 	gtk::Type::String,
 ];
 
@@ -186,10 +190,36 @@ impl Window {
 
 		let renderer = gtk::CellRendererText::new();
 		let column = gtk::TreeViewColumn::new();
-		column.set_title("Text");
+		column.pack_start(&renderer, false);
+		column.add_attribute(&renderer, "text", 1);
+		self.treeview.append_column(&column);
+
+		let renderer = gtk::CellRendererText::new();
+		let column = gtk::TreeViewColumn::new();
+		column.set_title("People");
+		column.set_expand(true);
+		column.pack_start(&renderer, false);
+		column.add_attribute(&renderer, "text", 2);
+		self.treeview.append_column(&column);
+
+		let renderer = gtk::CellRendererText::new();
+		let column = gtk::TreeViewColumn::new();
+		column.set_title("Signature");
+		column.pack_start(&renderer, false);
+		column.add_attribute(&renderer, "text", 3);
+		self.treeview.append_column(&column);
+
+		let renderer = gtk::CellRendererText::new();
+		let column = gtk::TreeViewColumn::new();
+		column.pack_start(&renderer, false);
+		column.add_attribute(&renderer, "text", 4);
+		self.treeview.append_column(&column);
+
+		let renderer = gtk::CellRendererText::new();
+		let column = gtk::TreeViewColumn::new();
+		column.set_title("Date");
 		column.pack_start(&renderer, false);
 		column.add_attribute(&renderer, "text", 0);
-		column.set_expand(true);
 		self.treeview.append_column(&column);
 
 		let scrolled = gtk::ScrolledWindow::new(None, None);
@@ -251,12 +281,16 @@ impl Window {
 				let record: csv::StringRecord = record.unwrap();
 
 				// Convert the record to a format gtk::ListStore likes
-				let record: [&glib::ToValue; 1] = [
+				let record: [&glib::ToValue; 5] = [
 					&String::from(&record[0]),
+					&String::from(&record[1]),
+					&String::from(&record[2]),
+					&String::from(&record[3]),
+					&String::from(&record[4]),
 				];
 
 				let iter = data.append();
-				data.set(&iter, &[0], &record);
+				data.set(&iter, &[0, 1, 2, 3, 4], &record);
 			}
 		}
 
