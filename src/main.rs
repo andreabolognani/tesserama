@@ -75,6 +75,8 @@ struct Window {
 	insertbutton: gtk::Button,
 	menubutton: gtk::ToggleButton,
 	stack: gtk::Stack,
+	searchentry: gtk::SearchEntry,
+	searchbar: gtk::SearchBar,
 	treeview: gtk::TreeView,
 	searchaction: gio::SimpleAction,
 	insertaction: gio::SimpleAction,
@@ -95,6 +97,8 @@ impl Window {
 			insertbutton: gtk::Button::new_with_label("Insert"),
 			menubutton: gtk::ToggleButton::new(),
 			stack: gtk::Stack::new(),
+			searchentry: gtk::SearchEntry::new(),
+			searchbar: gtk::SearchBar::new(),
 			treeview: gtk::TreeView::new(),
 			searchaction: gio::SimpleAction::new_stateful(
 				"search",
@@ -189,6 +193,19 @@ impl Window {
 
 		let contents = gtk::Box::new(gtk::Orientation::Vertical, 0);
 
+		let _self = self.clone();
+		self.searchentry.connect_search_changed(move |_| {
+			_self.search_changed();
+		});
+
+		let _self = self.clone();
+		self.searchentry.connect_stop_search(move |_| {
+			_self.stop_search();
+		});
+
+		self.searchbar.connect_entry(&self.searchentry);
+		self.searchbar.add(&self.searchentry);
+
 		let renderer = gtk::CellRendererText::new();
 		let column = gtk::TreeViewColumn::new();
 		column.pack_start(&renderer, false);
@@ -227,6 +244,7 @@ impl Window {
 		let scrolled = gtk::ScrolledWindow::new(None, None);
 		scrolled.add(&self.treeview);
 
+		contents.pack_start(&self.searchbar, false, false, 0);
 		contents.pack_start(&scrolled, true, true, 0);
 
 		self.stack.add_named(&empty, "empty");
@@ -296,12 +314,50 @@ impl Window {
 			}
 		}
 
+		self.searchaction.set_enabled(true);
+
 		self.treeview.set_model(data);
 
 		self.stack.set_visible_child_name("contents");
 	}
 
+	// High-level actions
+
+	fn start_search_action(&self) {
+		self.searchbar.set_search_mode(true);
+		self.insertaction.set_enabled(false);
+	}
+
+	fn stop_search_action(&self) {
+		self.searchbar.set_search_mode(false);
+		self.insertaction.set_enabled(true);
+	}
+
+	// Signal handlers
+
 	fn search_action_activated(&self) {
+		let variant: glib::Variant = self.searchaction.get_state().unwrap();
+		let state: bool = variant.get().unwrap();
+		let state = !state;
+
+		self.searchaction.set_state(&state.to_variant());
+
+		if state {
+			self.start_search_action();
+		} else {
+			self.stop_search_action();
+		}
+	}
+
+	fn search_changed(&self) {
+	}
+
+	fn stop_search(&self) {
+		self.searchaction.set_state(&false.to_variant());
+
+		// A bit redundant, but guarantees we perform the same teardown
+		// steps regardless of how the search has been interrupted
+		self.stop_search_action();
 	}
 
 	fn insert_action_activated(&self) {
