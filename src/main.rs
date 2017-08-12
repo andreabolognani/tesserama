@@ -333,6 +333,28 @@ impl Window {
 		self.insertaction.set_enabled(true);
 	}
 
+	fn open_action(&self) {
+		let dialog = gtk::FileChooserDialog::new(
+			Some("Choose a file"),
+			Some(&self.parent),
+			gtk::FileChooserAction::Open,
+		);
+		dialog.add_button("Cancel", gtk::ResponseType::Cancel.into());
+		dialog.add_button("Open", gtk::ResponseType::Ok.into());
+
+		if dialog.run() == gtk::ResponseType::Ok.into() {
+			let filename = dialog.get_filename();
+			let uri = dialog.get_uri();
+
+			if filename.is_some() && uri.is_some() {
+				self.set_data_source(filename.unwrap(), uri.unwrap());
+				self.load_data();
+			}
+		}
+
+		dialog.destroy();
+	}
+
 	// Signal handlers
 
 	fn search_action_activated(&self) {
@@ -367,25 +389,7 @@ impl Window {
 	}
 
 	fn open_action_activated(&self) {
-		let dialog = gtk::FileChooserDialog::new(
-			Some("Choose a file"),
-			Some(&self.parent),
-			gtk::FileChooserAction::Open,
-		);
-		dialog.add_button("Cancel", gtk::ResponseType::Cancel.into());
-		dialog.add_button("Open", gtk::ResponseType::Ok.into());
-
-		if dialog.run() == gtk::ResponseType::Ok.into() {
-			let filename = dialog.get_filename();
-			let uri = dialog.get_uri();
-
-			if filename.is_some() && uri.is_some() {
-				self.set_data_source(filename.unwrap(), uri.unwrap());
-				self.load_data();
-			}
-		}
-
-		dialog.destroy();
+		self.open_action();
 	}
 
 	fn save_action_activated(&self) {
