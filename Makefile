@@ -27,6 +27,7 @@ all:
 	$(FLATPAK) build $(builddir) install -m 0644 tesserama.desktop /app/share/applications/org.kiyuko.Tesserama.desktop
 	$(FLATPAK) build-finish $(builddir) $(SOCKETS) $(SHARES) $(FILESYSTEMS) --command=tesserama
 	$(FLATPAK) build-export $(repodir) $(builddir)
+	rm -rf $(builddir)
 
 clean:
 	rm -rf $(builddir) $(repodir)
