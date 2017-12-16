@@ -3,9 +3,6 @@ NULL=
 builddir=flatpak/build
 repodir=flatpak/repo
 
-FLATPAK=flatpak
-CARGO=cargo
-
 ifneq ($(ARCH),)
 arch= \
 	--arch=$(ARCH) \
@@ -27,14 +24,14 @@ FILESYSTEMS= \
 	$(NULL)
 
 all:
-	$(FLATPAK) build-init $(arch) $(SDK_EXTENSIONS) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
-	$(FLATPAK) build $(builddir) sh -c 'source /usr/lib/sdk/rust-stable/enable.sh && $(CARGO) build --release'
-	$(FLATPAK) build $(builddir) install -m 0755 -d /app/bin
-	$(FLATPAK) build $(builddir) install -m 0755 -d /app/share/applications
-	$(FLATPAK) build $(builddir) install -m 0755 target/release/tesserama /app/bin
-	$(FLATPAK) build $(builddir) install -m 0644 tesserama.desktop /app/share/applications/org.kiyuko.Tesserama.desktop
-	$(FLATPAK) build-finish $(builddir) $(SOCKETS) $(SHARES) $(FILESYSTEMS) --command=tesserama
-	$(FLATPAK) build-export $(repodir) $(builddir)
+	flatpak build-init $(arch) $(SDK_EXTENSIONS) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
+	flatpak build $(builddir) sh -c 'source /usr/lib/sdk/rust-stable/enable.sh && cargo build --release'
+	flatpak build $(builddir) install -m 0755 -d /app/bin
+	flatpak build $(builddir) install -m 0755 -d /app/share/applications
+	flatpak build $(builddir) install -m 0755 target/release/tesserama /app/bin
+	flatpak build $(builddir) install -m 0644 tesserama.desktop /app/share/applications/org.kiyuko.Tesserama.desktop
+	flatpak build-finish $(builddir) $(SOCKETS) $(SHARES) $(FILESYSTEMS) --command=tesserama
+	flatpak build-export $(repodir) $(builddir)
 	rm -rf $(builddir)
 
 clean:
