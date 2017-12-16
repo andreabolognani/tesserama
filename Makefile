@@ -6,6 +6,11 @@ repodir=flatpak/repo
 FLATPAK=flatpak
 CARGO=~/.cargo/bin/cargo
 
+ifneq ($(ARCH),)
+arch= \
+	--arch=$(ARCH) \
+	$(NULL)
+endif
 SOCKETS= \
 	--socket=session-bus \
 	--socket=wayland \
@@ -19,7 +24,7 @@ FILESYSTEMS= \
 	$(NULL)
 
 all:
-	$(FLATPAK) build-init $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
+	$(FLATPAK) build-init $(arch) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
 	$(FLATPAK) build $(builddir) $(CARGO) build --release
 	$(FLATPAK) build $(builddir) install -m 0755 -d /app/bin
 	$(FLATPAK) build $(builddir) install -m 0755 -d /app/share/applications
