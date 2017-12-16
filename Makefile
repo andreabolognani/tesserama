@@ -30,4 +30,4 @@ all:
 	rm -rf $(builddir)
 
 clean:
-	rm -rf $(builddir) $(repodir)
+	rm -rf $(builddir)
