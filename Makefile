@@ -4,13 +4,16 @@ builddir=flatpak/build
 repodir=flatpak/repo
 
 FLATPAK=flatpak
-CARGO=~/.cargo/bin/cargo
+CARGO=cargo
 
 ifneq ($(ARCH),)
 arch= \
 	--arch=$(ARCH) \
 	$(NULL)
 endif
+SDK_EXTENSIONS= \
+	--sdk-extension=org.freedesktop.Sdk.Extension.rust-stable \
+	$(NULL)
 SOCKETS= \
 	--socket=session-bus \
 	--socket=wayland \
@@ -24,8 +27,8 @@ FILESYSTEMS= \
 	$(NULL)
 
 all:
-	$(FLATPAK) build-init $(arch) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
-	$(FLATPAK) build $(builddir) $(CARGO) build --release
+	$(FLATPAK) build-init $(arch) $(SDK_EXTENSIONS) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
+	$(FLATPAK) build $(builddir) sh -c 'source /usr/lib/sdk/rust-stable/enable.sh && $(CARGO) build --release'
 	$(FLATPAK) build $(builddir) install -m 0755 -d /app/bin
 	$(FLATPAK) build $(builddir) install -m 0755 -d /app/share/applications
 	$(FLATPAK) build $(builddir) install -m 0755 target/release/tesserama /app/bin
