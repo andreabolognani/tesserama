@@ -48,3 +48,5 @@ publish: $(bin)
 
 clean:
 	rm -rf $(builddir)
+
+.PHONY: all run publish clean
