@@ -48,7 +48,7 @@ Resources
 
 The canonical Git repository can be found at
 
-  http://git.kiyuko.org/cgi-bin/browse?p=tesserama
+  https://git.kiyuko.org/tesserama
 
 
 License
