@@ -10,6 +10,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use gio::prelude::*;
 use gtk::prelude::*;
 
 #[derive(Clone)]
@@ -42,12 +43,7 @@ impl Application {
 
     fn run(&self) {
         let args: Vec<String> = std::env::args().collect();
-        let args: Vec<&str> = args.iter().map(|s| s.as_ref()).collect();
-
-        let argc: i32 = args.len() as i32;
-        let argv: &[&str] = &args;
-
-        self.parent.run(argc, argv);
+        self.parent.run(&args);
     }
 
     fn create_window(&self) -> gtk::ApplicationWindow {
