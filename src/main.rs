@@ -11,6 +11,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use gio::prelude::*;
+use gio::MenuExt;
 use gtk::prelude::*;
 
 #[derive(Clone)]
@@ -70,6 +71,7 @@ struct Window {
     searchbutton: gtk::ToggleButton,
     insertbutton: gtk::Button,
     menubutton: gtk::ToggleButton,
+    menupopover: gtk::Popover,
     stack: gtk::Stack,
     searchentry: gtk::SearchEntry,
     searchbar: gtk::SearchBar,
@@ -86,12 +88,15 @@ struct Window {
 
 impl Window {
     fn new(app: &Application) -> Self {
+        let menubutton = gtk::ToggleButton::new();
+        let menupopover = gtk::Popover::new(&menubutton);
         let ret = Window {
             parent: app.create_window(),
             headerbar: gtk::HeaderBar::new(),
             searchbutton: gtk::ToggleButton::new(),
             insertbutton: gtk::Button::new_with_label("Insert"),
-            menubutton: gtk::ToggleButton::new(),
+            menubutton: menubutton,
+            menupopover: menupopover,
             stack: gtk::Stack::new(),
             searchentry: gtk::SearchEntry::new(),
             searchbar: gtk::SearchBar::new(),
@@ -180,6 +185,16 @@ impl Window {
         self.menubutton.set_tooltip_text("Menu");
         self.menubutton.set_action_name("win.menu");
         self.headerbar.pack_end(&self.menubutton);
+
+        let menu = gio::Menu::new();
+        menu.append("Open", "win.open");
+        menu.append("Save", "win.save");
+        self.menupopover.bind_model(&menu, None);
+
+        let _self = self.clone();
+        self.menupopover.connect_closed(move |_| {
+            _self.menu_popover_closed();
+        });
 
         /* Empty application */
 
@@ -329,6 +344,14 @@ impl Window {
         self.insertaction.set_enabled(true);
     }
 
+    fn start_menu_action(&self) {
+        self.menupopover.show();
+    }
+
+    fn stop_menu_action(&self) {
+        self.menupopover.hide();
+    }
+
     fn open_action(&self) {
         let dialog = gtk::FileChooserDialog::new(
             Some("Choose a file"),
@@ -382,6 +405,21 @@ impl Window {
     }
 
     fn menu_action_activated(&self) {
+        let variant: glib::Variant = self.menuaction.get_state().unwrap();
+        let state: bool = variant.get().unwrap();
+        let state = !state;
+
+        self.menuaction.set_state(&state.to_variant());
+
+        if state {
+            self.start_menu_action();
+        } else {
+            self.stop_menu_action();
+        }
+    }
+
+    fn menu_popover_closed(&self) {
+        self.menuaction.set_state(&false.to_variant());
     }
 
     fn open_action_activated(&self) {
