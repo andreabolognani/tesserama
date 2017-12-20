@@ -85,6 +85,7 @@ struct ApplicationWindow {
     source_uri: Rc<RefCell<String>>,
     data: Rc<RefCell<gtk::ListStore>>,
     filtered_data: Rc<RefCell<gtk::TreeModelFilter>>,
+    filter_needle: Rc<RefCell<String>>,
 }
 
 impl ApplicationWindow {
@@ -121,6 +122,7 @@ impl ApplicationWindow {
             source_uri: Rc::new(RefCell::new(String::new())),
             data: Rc::new(RefCell::new(data)),
             filtered_data: Rc::new(RefCell::new(filtered_data)),
+            filter_needle: Rc::new(RefCell::new(String::new())),
         };
         ret.setup();
         ret
@@ -299,13 +301,25 @@ impl ApplicationWindow {
         self.update_title();
     }
 
+    fn search(&self) {
+        {
+            let mut filter_needle = self.filter_needle.borrow_mut();
+            *filter_needle = self.searchentry.get_text().unwrap();
+        }
+
+        let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
+        filtered_data.refilter();
+    }
+
     fn load_data(&self) {
         {
             let mut data = self.data.borrow_mut();
             let mut filtered_data = self.filtered_data.borrow_mut();
+            let mut filter_needle = self.filter_needle.borrow_mut();
 
             *data = gtk::ListStore::new(&RECORD_TYPES);
             *filtered_data = gtk::TreeModelFilter::new(&*data, None);
+            *filter_needle = String::new();
         }
 
         let data: &gtk::ListStore = &*self.data.borrow();
@@ -338,9 +352,21 @@ impl ApplicationWindow {
         self.searchaction.set_enabled(true);
         self.insertaction.set_enabled(true);
 
+        let _self = self.clone();
+        filtered_data.set_visible_func(move |_, iter| {
+            _self.filter_func(iter)
+        });
         self.treeview.set_model(filtered_data);
 
         self.stack.set_visible_child_name("contents");
+    }
+
+    fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let filter_needle: &String = &*self.filter_needle.borrow();
+        let people: &String = &data.get_value(iter, 2).get().unwrap();
+
+        people.contains(filter_needle)
     }
 
     // High-level actions
@@ -402,6 +428,7 @@ impl ApplicationWindow {
     }
 
     fn search_changed(&self) {
+        self.search();
     }
 
     fn stop_search(&self) {
