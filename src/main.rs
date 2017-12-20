@@ -326,6 +326,7 @@ impl ApplicationWindow {
         }
 
         self.searchaction.set_enabled(true);
+        self.insertaction.set_enabled(true);
 
         self.treeview.set_model(data);
 
