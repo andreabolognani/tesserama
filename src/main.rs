@@ -22,7 +22,7 @@ struct Application {
 impl Application {
     fn new() -> Self {
         let flags = gio::ApplicationFlags::empty();
-        let ret = Application {
+        let ret = Self {
             parent: gtk::Application::new(None, flags)
                     .expect("GTK+ initialization error"),
         };
@@ -90,7 +90,7 @@ impl Window {
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
-        let ret = Window {
+        let ret = Self {
             parent: app.create_window(),
             headerbar: gtk::HeaderBar::new(),
             searchbutton: gtk::ToggleButton::new(),
