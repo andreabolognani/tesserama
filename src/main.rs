@@ -84,12 +84,15 @@ struct ApplicationWindow {
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
     data: Rc<RefCell<gtk::ListStore>>,
+    filtered_data: Rc<RefCell<gtk::TreeModelFilter>>,
 }
 
 impl ApplicationWindow {
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
+        let data = gtk::ListStore::new(&RECORD_TYPES);
+        let filtered_data = gtk::TreeModelFilter::new(&data, None);
         let ret = Self {
             parent: app.create_window(),
             headerbar: gtk::HeaderBar::new(),
@@ -116,7 +119,8 @@ impl ApplicationWindow {
             saveaction: gio::SimpleAction::new("save", None),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),
             source_uri: Rc::new(RefCell::new(String::new())),
-            data: Rc::new(RefCell::new(gtk::ListStore::new(&RECORD_TYPES))),
+            data: Rc::new(RefCell::new(data)),
+            filtered_data: Rc::new(RefCell::new(filtered_data)),
         };
         ret.setup();
         ret
@@ -296,10 +300,14 @@ impl ApplicationWindow {
     fn load_data(&self) {
         {
             let mut data = self.data.borrow_mut();
+            let mut filtered_data = self.filtered_data.borrow_mut();
+
             *data = gtk::ListStore::new(&RECORD_TYPES);
+            *filtered_data = gtk::TreeModelFilter::new(&*data, None);
         }
 
         let data: &gtk::ListStore = &*self.data.borrow();
+        let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
         let path: &PathBuf = &*self.source_filename.borrow();
 
         let mut reader = csv::ReaderBuilder::new()
@@ -328,7 +336,7 @@ impl ApplicationWindow {
         self.searchaction.set_enabled(true);
         self.insertaction.set_enabled(true);
 
-        self.treeview.set_model(data);
+        self.treeview.set_model(filtered_data);
 
         self.stack.set_visible_child_name("contents");
     }
