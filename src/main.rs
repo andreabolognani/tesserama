@@ -304,7 +304,7 @@ impl ApplicationWindow {
     fn search(&self) {
         {
             let mut filter_needle = self.filter_needle.borrow_mut();
-            *filter_needle = self.searchentry.get_text().unwrap();
+            *filter_needle = self.searchentry.get_text().unwrap().to_lowercase();
         }
 
         let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
@@ -364,7 +364,8 @@ impl ApplicationWindow {
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
         let data: &gtk::ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
-        let people: &String = &data.get_value(iter, 2).get().unwrap();
+        let value: glib::Value = data.get_value(iter, 2);
+        let people: String = value.get::<String>().unwrap().to_lowercase();
 
         people.contains(filter_needle)
     }
