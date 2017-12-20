@@ -52,7 +52,7 @@ impl Application {
     }
 
     fn activate_action(&self) {
-        Window::new(&self).show_all();
+        ApplicationWindow::new(&self).show_all();
     }
 }
 
@@ -65,7 +65,7 @@ const RECORD_TYPES: [gtk::Type; 5] = [
 ];
 
 #[derive(Clone)]
-struct Window {
+struct ApplicationWindow {
     parent: gtk::ApplicationWindow,
     headerbar: gtk::HeaderBar,
     searchbutton: gtk::ToggleButton,
@@ -86,7 +86,7 @@ struct Window {
     data: Rc<RefCell<gtk::ListStore>>,
 }
 
-impl Window {
+impl ApplicationWindow {
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
