@@ -221,6 +221,8 @@ impl ApplicationWindow {
         self.searchbar.connect_entry(&self.searchentry);
         self.searchbar.add(&self.searchentry);
 
+        self.treeview.set_enable_search(false);
+
         let renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&renderer, false);
