@@ -81,11 +81,11 @@ struct ApplicationWindow {
 }
 
 impl ApplicationWindow {
-    const COLUMN_DATE: i32 = 0;
-    const COLUMN_NUMBER: i32 = 1;
-    const COLUMN_PEOPLE: i32 = 2;
-    const COLUMN_SIGNATURE: i32 = 3;
-    const COLUMN_FLAGS: i32 = 4;
+    const COLUMN_DATE: u32 = 0;
+    const COLUMN_NUMBER: u32 = 1;
+    const COLUMN_PEOPLE: u32 = 2;
+    const COLUMN_SIGNATURE: u32 = 3;
+    const COLUMN_FLAGS: u32 = 4;
 
     const RECORD_TYPES: [gtk::Type; 5] = [
         gtk::Type::String, // COLUMN_DATE
@@ -234,7 +234,7 @@ impl ApplicationWindow {
         let number_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&number_renderer, false);
-        column.add_attribute(&number_renderer, "text", Self::COLUMN_NUMBER);
+        column.add_attribute(&number_renderer, "text", Self::COLUMN_NUMBER as i32);
         self.treeview.append_column(&column);
 
         let people_renderer = gtk::CellRendererText::new();
@@ -243,27 +243,27 @@ impl ApplicationWindow {
         column.set_title("People");
         column.set_expand(true);
         column.pack_start(&people_renderer, false);
-        column.add_attribute(&people_renderer, "text", Self::COLUMN_PEOPLE);
+        column.add_attribute(&people_renderer, "text", Self::COLUMN_PEOPLE as i32);
         self.treeview.append_column(&column);
 
         let signature_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Signature");
         column.pack_start(&signature_renderer, false);
-        column.add_attribute(&signature_renderer, "text", Self::COLUMN_SIGNATURE);
+        column.add_attribute(&signature_renderer, "text", Self::COLUMN_SIGNATURE as i32);
         self.treeview.append_column(&column);
 
         let flags_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&flags_renderer, false);
-        column.add_attribute(&flags_renderer, "text", Self::COLUMN_FLAGS);
+        column.add_attribute(&flags_renderer, "text", Self::COLUMN_FLAGS as i32);
         self.treeview.append_column(&column);
 
         let date_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Date");
         column.pack_start(&date_renderer, false);
-        column.add_attribute(&date_renderer, "text", Self::COLUMN_DATE);
+        column.add_attribute(&date_renderer, "text", Self::COLUMN_DATE as i32);
         self.treeview.append_column(&column);
 
         let scrolled = gtk::ScrolledWindow::new(None, None);
@@ -374,14 +374,14 @@ impl ApplicationWindow {
         if filter_needle.parse::<i32>().is_ok() {
             // If the needle can be converted to a number, we look up
             // the corresponding record
-            let value: glib::Value = data.get_value(iter, Self::COLUMN_NUMBER);
+            let value: glib::Value = data.get_value(iter, Self::COLUMN_NUMBER as i32);
             let number: &String = &value.get::<String>().unwrap();
 
             number == filter_needle
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names
-            let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE);
+            let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE as i32);
             let people: String = value.get::<String>().unwrap().to_lowercase();
 
             people.contains(filter_needle)
