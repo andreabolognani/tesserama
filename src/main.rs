@@ -56,20 +56,6 @@ impl Application {
     }
 }
 
-const COLUMN_DATE: i32 = 0;
-const COLUMN_NUMBER: i32 = 1;
-const COLUMN_PEOPLE: i32 = 2;
-const COLUMN_SIGNATURE: i32 = 3;
-const COLUMN_FLAGS: i32 = 4;
-
-const RECORD_TYPES: [gtk::Type; 5] = [
-    gtk::Type::String, // COLUMN_DATE
-    gtk::Type::String, // COLUMN_NUMBER
-    gtk::Type::String, // COLUMN_PEOPLE
-    gtk::Type::String, // COLUMN_SIGNATURE
-    gtk::Type::String, // COLUMN_FLAGS
-];
-
 #[derive(Clone)]
 struct ApplicationWindow {
     parent: gtk::ApplicationWindow,
@@ -95,10 +81,24 @@ struct ApplicationWindow {
 }
 
 impl ApplicationWindow {
+    const COLUMN_DATE: i32 = 0;
+    const COLUMN_NUMBER: i32 = 1;
+    const COLUMN_PEOPLE: i32 = 2;
+    const COLUMN_SIGNATURE: i32 = 3;
+    const COLUMN_FLAGS: i32 = 4;
+
+    const RECORD_TYPES: [gtk::Type; 5] = [
+        gtk::Type::String, // COLUMN_DATE
+        gtk::Type::String, // COLUMN_NUMBER
+        gtk::Type::String, // COLUMN_PEOPLE
+        gtk::Type::String, // COLUMN_SIGNATURE
+        gtk::Type::String, // COLUMN_FLAGS
+    ];
+
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
-        let data = gtk::ListStore::new(&RECORD_TYPES);
+        let data = gtk::ListStore::new(&Self::RECORD_TYPES);
         let filtered_data = gtk::TreeModelFilter::new(&data, None);
         let ret = Self {
             parent: app.create_window(),
@@ -234,7 +234,7 @@ impl ApplicationWindow {
         let renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", COLUMN_NUMBER);
+        column.add_attribute(&renderer, "text", Self::COLUMN_NUMBER);
         self.treeview.append_column(&column);
 
         let renderer = gtk::CellRendererText::new();
@@ -243,27 +243,27 @@ impl ApplicationWindow {
         column.set_title("People");
         column.set_expand(true);
         column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", COLUMN_PEOPLE);
+        column.add_attribute(&renderer, "text", Self::COLUMN_PEOPLE);
         self.treeview.append_column(&column);
 
         let renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Signature");
         column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", COLUMN_SIGNATURE);
+        column.add_attribute(&renderer, "text", Self::COLUMN_SIGNATURE);
         self.treeview.append_column(&column);
 
         let renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", COLUMN_FLAGS);
+        column.add_attribute(&renderer, "text", Self::COLUMN_FLAGS);
         self.treeview.append_column(&column);
 
         let renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Date");
         column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", COLUMN_DATE);
+        column.add_attribute(&renderer, "text", Self::COLUMN_DATE);
         self.treeview.append_column(&column);
 
         let scrolled = gtk::ScrolledWindow::new(None, None);
@@ -323,7 +323,7 @@ impl ApplicationWindow {
             let mut filtered_data = self.filtered_data.borrow_mut();
             let mut filter_needle = self.filter_needle.borrow_mut();
 
-            *data = gtk::ListStore::new(&RECORD_TYPES);
+            *data = gtk::ListStore::new(&Self::RECORD_TYPES);
             *filtered_data = gtk::TreeModelFilter::new(&*data, None);
             *filter_needle = String::new();
         }
@@ -370,7 +370,7 @@ impl ApplicationWindow {
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
         let data: &gtk::ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
-        let value: glib::Value = data.get_value(iter, COLUMN_PEOPLE);
+        let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE);
         let people: String = value.get::<String>().unwrap().to_lowercase();
 
         people.contains(filter_needle)
