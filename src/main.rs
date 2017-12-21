@@ -370,10 +370,22 @@ impl ApplicationWindow {
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
         let data: &gtk::ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
-        let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE);
-        let people: String = value.get::<String>().unwrap().to_lowercase();
 
-        people.contains(filter_needle)
+        if filter_needle.parse::<i32>().is_ok() {
+            // If the needle can be converted to a number, we look up
+            // the corresponding record
+            let value: glib::Value = data.get_value(iter, Self::COLUMN_NUMBER);
+            let number: &String = &value.get::<String>().unwrap();
+
+            number == filter_needle
+        } else {
+            // In all other cases, we perform a case-insensitive substring
+            // search among people's names
+            let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE);
+            let people: String = value.get::<String>().unwrap().to_lowercase();
+
+            people.contains(filter_needle)
+        }
     }
 
     // High-level actions
