@@ -234,6 +234,7 @@ impl ApplicationWindow {
         self.treeview.set_enable_search(false);
 
         let number_renderer = gtk::CellRendererText::new();
+        number_renderer.set_alignment(1.0, 0.5);
         number_renderer.set_property_editable(true);
         let _self = self.clone();
         number_renderer.connect_edited(move |_, path, text| {
@@ -266,17 +267,20 @@ impl ApplicationWindow {
         });
         let column = gtk::TreeViewColumn::new();
         column.set_title("Signature");
+        column.set_sizing(gtk::TreeViewColumnSizing::GrowOnly);
         column.pack_start(&signature_renderer, false);
         column.add_attribute(&signature_renderer, "text", Self::COLUMN_SIGNATURE as i32);
         self.treeview.append_column(&column);
 
         let flags_renderer = gtk::CellRendererText::new();
+        flags_renderer.set_alignment(1.0, 0.5);
         flags_renderer.set_property_editable(true);
         let _self = self.clone();
         flags_renderer.connect_edited(move |_, path, text| {
             _self.flags_cell_edited(path, text);
         });
         let column = gtk::TreeViewColumn::new();
+        column.set_sizing(gtk::TreeViewColumnSizing::GrowOnly);
         column.pack_start(&flags_renderer, false);
         column.add_attribute(&flags_renderer, "text", Self::COLUMN_FLAGS as i32);
         self.treeview.append_column(&column);
