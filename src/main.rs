@@ -231,39 +231,39 @@ impl ApplicationWindow {
 
         self.treeview.set_enable_search(false);
 
-        let renderer = gtk::CellRendererText::new();
+        let number_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
-        column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", Self::COLUMN_NUMBER);
+        column.pack_start(&number_renderer, false);
+        column.add_attribute(&number_renderer, "text", Self::COLUMN_NUMBER);
         self.treeview.append_column(&column);
 
-        let renderer = gtk::CellRendererText::new();
+        let people_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
-        renderer.set_property_ellipsize(pango::EllipsizeMode::End);
+        people_renderer.set_property_ellipsize(pango::EllipsizeMode::End);
         column.set_title("People");
         column.set_expand(true);
-        column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", Self::COLUMN_PEOPLE);
+        column.pack_start(&people_renderer, false);
+        column.add_attribute(&people_renderer, "text", Self::COLUMN_PEOPLE);
         self.treeview.append_column(&column);
 
-        let renderer = gtk::CellRendererText::new();
+        let signature_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Signature");
-        column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", Self::COLUMN_SIGNATURE);
+        column.pack_start(&signature_renderer, false);
+        column.add_attribute(&signature_renderer, "text", Self::COLUMN_SIGNATURE);
         self.treeview.append_column(&column);
 
-        let renderer = gtk::CellRendererText::new();
+        let flags_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
-        column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", Self::COLUMN_FLAGS);
+        column.pack_start(&flags_renderer, false);
+        column.add_attribute(&flags_renderer, "text", Self::COLUMN_FLAGS);
         self.treeview.append_column(&column);
 
-        let renderer = gtk::CellRendererText::new();
+        let date_renderer = gtk::CellRendererText::new();
         let column = gtk::TreeViewColumn::new();
         column.set_title("Date");
-        column.pack_start(&renderer, false);
-        column.add_attribute(&renderer, "text", Self::COLUMN_DATE);
+        column.pack_start(&date_renderer, false);
+        column.add_attribute(&date_renderer, "text", Self::COLUMN_DATE);
         self.treeview.append_column(&column);
 
         let scrolled = gtk::ScrolledWindow::new(None, None);
