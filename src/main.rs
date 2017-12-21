@@ -309,11 +309,18 @@ impl ApplicationWindow {
     fn update_title(&self) {
         let source_filename: &PathBuf = &*self.source_filename.borrow();
 
-        let title: &OsStr = source_filename.file_name().unwrap();
-        let title: Option<&str> = title.to_str();
+        let file_name: &OsStr = source_filename.file_name().unwrap();
+        let parent: &Path = source_filename.parent().unwrap();
 
-        let subtitle: &Path = source_filename.parent().unwrap();
-        let subtitle: Option<&str> = subtitle.to_str();
+        let mut tmp = String::from("");
+        let title: Option<&str> = file_name.to_str().and_then(|s| {
+            if self.is_dirty() {
+                tmp.push('*');
+            }
+            tmp.push_str(s);
+            Some(tmp.as_str())
+        });
+        let subtitle: Option<&str> = parent.to_str();
 
         self.headerbar.set_title(title);
         self.headerbar.set_subtitle(subtitle);
@@ -330,6 +337,10 @@ impl ApplicationWindow {
         }
 
         self.update_title();
+    }
+
+    fn is_dirty(&self) -> bool {
+        false
     }
 
     fn search(&self) {
