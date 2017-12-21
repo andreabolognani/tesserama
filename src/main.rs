@@ -75,6 +75,7 @@ struct ApplicationWindow {
     saveaction: gio::SimpleAction,
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
+    dirty: Rc<RefCell<bool>>,
     data: Rc<RefCell<gtk::ListStore>>,
     filtered_data: Rc<RefCell<gtk::TreeModelFilter>>,
     filter_needle: Rc<RefCell<String>>,
@@ -126,6 +127,7 @@ impl ApplicationWindow {
             saveaction: gio::SimpleAction::new("save", None),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),
             source_uri: Rc::new(RefCell::new(String::new())),
+            dirty: Rc::new(RefCell::new(false)),
             data: Rc::new(RefCell::new(data)),
             filtered_data: Rc::new(RefCell::new(filtered_data)),
             filter_needle: Rc::new(RefCell::new(String::new())),
@@ -339,8 +341,15 @@ impl ApplicationWindow {
         self.update_title();
     }
 
+    fn set_dirty(&self, dirty: bool) {
+        *self.dirty.borrow_mut() = dirty;
+        self.saveaction.set_enabled(dirty);
+
+        self.update_title()
+    }
+
     fn is_dirty(&self) -> bool {
-        false
+        *self.dirty.borrow()
     }
 
     fn search(&self) {
@@ -391,6 +400,7 @@ impl ApplicationWindow {
             }
         }
 
+        self.set_dirty(false);
         self.searchaction.set_enabled(true);
         self.insertaction.set_enabled(true);
 
@@ -446,6 +456,7 @@ impl ApplicationWindow {
             ];
 
             data.set(&iter, &[Self::COLUMN_NUMBER], &record);
+            self.set_dirty(true);
         }
     }
 
@@ -462,6 +473,7 @@ impl ApplicationWindow {
             ];
 
             data.set(&iter, &[Self::COLUMN_PEOPLE], &record);
+            self.set_dirty(true);
         }
     }
 
@@ -478,6 +490,7 @@ impl ApplicationWindow {
             ];
 
             data.set(&iter, &[Self::COLUMN_SIGNATURE], &record);
+            self.set_dirty(true);
         }
     }
 
@@ -494,6 +507,7 @@ impl ApplicationWindow {
             ];
 
             data.set(&iter, &[Self::COLUMN_FLAGS], &record);
+            self.set_dirty(true);
         }
     }
 
@@ -510,6 +524,7 @@ impl ApplicationWindow {
             ];
 
             data.set(&iter, &[Self::COLUMN_DATE], &record);
+            self.set_dirty(true);
         }
     }
 
