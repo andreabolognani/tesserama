@@ -232,14 +232,24 @@ impl ApplicationWindow {
         self.treeview.set_enable_search(false);
 
         let number_renderer = gtk::CellRendererText::new();
+        number_renderer.set_property_editable(true);
+        let _self = self.clone();
+        number_renderer.connect_edited(move |_, path, text| {
+            _self.number_cell_edited(path, text);
+        });
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&number_renderer, false);
         column.add_attribute(&number_renderer, "text", Self::COLUMN_NUMBER as i32);
         self.treeview.append_column(&column);
 
         let people_renderer = gtk::CellRendererText::new();
-        let column = gtk::TreeViewColumn::new();
         people_renderer.set_property_ellipsize(pango::EllipsizeMode::End);
+        people_renderer.set_property_editable(true);
+        let _self = self.clone();
+        people_renderer.connect_edited(move |_, path, text| {
+            _self.people_cell_edited(path, text);
+        });
+        let column = gtk::TreeViewColumn::new();
         column.set_title("People");
         column.set_expand(true);
         column.pack_start(&people_renderer, false);
@@ -247,6 +257,11 @@ impl ApplicationWindow {
         self.treeview.append_column(&column);
 
         let signature_renderer = gtk::CellRendererText::new();
+        signature_renderer.set_property_editable(true);
+        let _self = self.clone();
+        signature_renderer.connect_edited(move |_, path, text| {
+            _self.signature_cell_edited(path, text);
+        });
         let column = gtk::TreeViewColumn::new();
         column.set_title("Signature");
         column.pack_start(&signature_renderer, false);
@@ -254,12 +269,22 @@ impl ApplicationWindow {
         self.treeview.append_column(&column);
 
         let flags_renderer = gtk::CellRendererText::new();
+        flags_renderer.set_property_editable(true);
+        let _self = self.clone();
+        flags_renderer.connect_edited(move |_, path, text| {
+            _self.flags_cell_edited(path, text);
+        });
         let column = gtk::TreeViewColumn::new();
         column.pack_start(&flags_renderer, false);
         column.add_attribute(&flags_renderer, "text", Self::COLUMN_FLAGS as i32);
         self.treeview.append_column(&column);
 
         let date_renderer = gtk::CellRendererText::new();
+        date_renderer.set_property_editable(true);
+        let _self = self.clone();
+        date_renderer.connect_edited(move |_, path, text| {
+            _self.date_cell_edited(path, text);
+        });
         let column = gtk::TreeViewColumn::new();
         column.set_title("Date");
         column.pack_start(&date_renderer, false);
@@ -388,6 +413,95 @@ impl ApplicationWindow {
         }
     }
 
+    fn convert_path(&self, path: gtk::TreePath) -> gtk::TreePath {
+        let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
+
+        // Since we use filtering on the data displayed in the
+        // treeview, we have to convert paths from the filtered
+        // model to the actual model before using them
+        filtered_data.convert_path_to_child_path(&path).unwrap()
+    }
+
+    fn update_number(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
+        let number: &String = &value.get::<String>().unwrap();
+
+        if text != number {
+            let record: [&glib::ToValue; 1] = [
+                &String::from(text),
+            ];
+
+            data.set(&iter, &[Self::COLUMN_NUMBER], &record);
+        }
+    }
+
+    fn update_people(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_PEOPLE as i32);
+        let people: &String = &value.get::<String>().unwrap();
+
+        if text != people {
+            let record: [&glib::ToValue; 1] = [
+                &String::from(text),
+            ];
+
+            data.set(&iter, &[Self::COLUMN_PEOPLE], &record);
+        }
+    }
+
+    fn update_signature(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_SIGNATURE as i32);
+        let signature: &String = &value.get::<String>().unwrap();
+
+        if text != signature {
+            let record: [&glib::ToValue; 1] = [
+                &String::from(text),
+            ];
+
+            data.set(&iter, &[Self::COLUMN_SIGNATURE], &record);
+        }
+    }
+
+    fn update_flags(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_FLAGS as i32);
+        let flags: &String = &value.get::<String>().unwrap();
+
+        if text != flags {
+            let record: [&glib::ToValue; 1] = [
+                &String::from(text),
+            ];
+
+            data.set(&iter, &[Self::COLUMN_FLAGS], &record);
+        }
+    }
+
+    fn update_date(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_DATE as i32);
+        let date: &String = &value.get::<String>().unwrap();
+
+        if text != date {
+            let record: [&glib::ToValue; 1] = [
+                &String::from(text),
+            ];
+
+            data.set(&iter, &[Self::COLUMN_DATE], &record);
+        }
+    }
+
     // High-level actions
 
     fn start_search_action(&self) {
@@ -484,6 +598,26 @@ impl ApplicationWindow {
     }
 
     fn save_action_activated(&self) {
+    }
+
+    fn number_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_number(path, text);
+    }
+
+    fn people_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_people(path, text);
+    }
+
+    fn signature_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_signature(path, text);
+    }
+
+    fn flags_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_flags(path, text);
+    }
+
+    fn date_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_date(path, text);
     }
 }
 
