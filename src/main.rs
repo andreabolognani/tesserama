@@ -156,6 +156,11 @@ impl ApplicationWindow {
     fn setup(&self) {
         self.parent.set_default_size(800, 600);
 
+        let _self = self.clone();
+        self.parent.connect_delete_event(move |_,_| {
+            _self.delete_event()
+        });
+
         /* Actions */
 
         let _self = self.clone();
@@ -455,6 +460,37 @@ impl ApplicationWindow {
         }
     }
 
+    // Returns true if it's okay to discard changes in the current
+    // document, either because the user has confirmed by clicking
+    // the relative button or because there are none
+    fn discard_changes_okay(&self) -> bool {
+
+        let mut ret = false;
+
+        if self.is_dirty() {
+            let dialog = gtk::MessageDialog::new(
+                Some(&self.parent),
+                gtk::DialogFlags::empty(),
+                gtk::MessageType::Question,
+                gtk::ButtonsType::OkCancel,
+                "Discard unsaved changes?",
+            );
+
+            // Only proceed if the user has explicitly selected the
+            // corresponding option; pressing Cancel or dismissing
+            // the dialog by pressing ESC cancels the close operation
+            if dialog.run() == gtk::ResponseType::Ok.into() {
+                ret = true;
+            }
+
+            dialog.destroy()
+        } else {
+            ret = true;
+        }
+
+        ret
+    }
+
     fn convert_path(&self, path: gtk::TreePath) -> gtk::TreePath {
         let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
 
@@ -591,6 +627,12 @@ impl ApplicationWindow {
         dialog.destroy();
     }
 
+    fn close_action(&self) -> glib::signal::Inhibit {
+        // false means we want to close the window, true means
+        // we don't, so we have to flip the result here
+        glib::signal::Inhibit(!self.discard_changes_okay())
+    }
+
     // Signal handlers
 
     fn search_action_activated(&self) {
@@ -665,6 +707,10 @@ impl ApplicationWindow {
 
     fn date_cell_edited(&self, path: gtk::TreePath, text: &str) {
         self.update_date(path, text);
+    }
+
+    fn delete_event(&self) -> glib::signal::Inhibit {
+        self.close_action()
     }
 }
 
