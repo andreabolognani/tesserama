@@ -20,9 +20,12 @@ extern crate gio;
 extern crate pango;
 extern crate gtk;
 extern crate csv;
+extern crate time;
 
 use std::cell::RefCell;
+use std::cmp;
 use std::ffi::OsStr;
+use std::fmt;
 use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -85,6 +88,7 @@ struct ApplicationWindow {
     searchentry: gtk::SearchEntry,
     searchbar: gtk::SearchBar,
     treeview: gtk::TreeView,
+    peoplecolumn: gtk::TreeViewColumn,
     searchaction: gio::SimpleAction,
     insertaction: gio::SimpleAction,
     menuaction: gio::SimpleAction,
@@ -129,6 +133,7 @@ impl ApplicationWindow {
             searchentry: gtk::SearchEntry::new(),
             searchbar: gtk::SearchBar::new(),
             treeview: gtk::TreeView::new(),
+            peoplecolumn: gtk::TreeViewColumn::new(),
             searchaction: gio::SimpleAction::new_stateful(
                 "search",
                 None,
@@ -274,12 +279,11 @@ impl ApplicationWindow {
         people_renderer.connect_edited(move |_, path, text| {
             _self.people_cell_edited(path, text);
         });
-        let column = gtk::TreeViewColumn::new();
-        column.set_title("People");
-        column.set_expand(true);
-        column.pack_start(&people_renderer, false);
-        column.add_attribute(&people_renderer, "text", Self::COLUMN_PEOPLE as i32);
-        self.treeview.append_column(&column);
+        self.peoplecolumn.set_title("People");
+        self.peoplecolumn.set_expand(true);
+        self.peoplecolumn.pack_start(&people_renderer, false);
+        self.peoplecolumn.add_attribute(&people_renderer, "text", Self::COLUMN_PEOPLE as i32);
+        self.treeview.append_column(&self.peoplecolumn);
 
         let signature_renderer = gtk::CellRendererText::new();
         signature_renderer.set_property_editable(true);
@@ -659,6 +663,57 @@ impl ApplicationWindow {
         self.insertaction.set_enabled(true);
     }
 
+    fn insert_action(&self) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+
+        let mut number: i32 = 1;
+        let iter: gtk::TreeIter = data.get_iter_first().unwrap();
+
+        loop {
+            let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
+            let value: Option<String> = value.get::<String>();
+
+            if value.is_some() {
+                number = match value.unwrap().parse::<i32>() {
+                    Ok(value) => cmp::max(number, value + 1),
+                    Err(_) => number,
+                }
+            }
+
+            if !data.iter_next(&iter) { break; }
+        }
+
+        let number: String = fmt::format(format_args!("{}", number));
+
+        let date: String = match time::now().strftime("%d/%m/%y") {
+            Ok(now) => { fmt::format(format_args!("{}", now)) },
+            Err(_) => { String::new() },
+        };
+
+        let mut record: [&glib::ToValue; 5] = [
+            &String::new(),
+            &String::new(),
+            &String::new(),
+            &String::new(),
+            &String::new(),
+        ];
+
+        // Fill in some sensible data: the next number in the
+        // sequence and today's date
+        record[Self::COLUMN_NUMBER as usize] = &number;
+        record[Self::COLUMN_DATE as usize] = &date;
+
+        let cell: gtk::TreeIter = data.append();
+        let path: gtk::TreePath = data.get_path(&cell).unwrap();
+
+        // Insert the fresh data
+        data.set(&cell, &[0, 1, 2, 3, 4], &record);
+
+        // Scroll to it and start editing right away
+        self.treeview.scroll_to_cell(&path, None, false, 0.0, 0.0);
+        self.treeview.set_cursor(&path, &self.peoplecolumn, true);
+    }
+
     fn start_menu_action(&self) {
         self.menupopover.show();
     }
@@ -728,6 +783,7 @@ impl ApplicationWindow {
     }
 
     fn insert_action_activated(&self) {
+        self.insert_action();
     }
 
     fn menu_action_activated(&self) {
