@@ -455,9 +455,12 @@ impl ApplicationWindow {
 
             for x in 0..5 {
                 let value: glib::Value = data.get_value(&iter, x);
-                let value: &String = &value.get::<String>().unwrap();
+                let value: Option<String> = value.get::<String>();
 
-                record.push_field(value);
+                match value {
+                    Some(ref field) => record.push_field(field),
+                    None => break,
+                }
             }
 
             if &record[Self::COLUMN_PEOPLE as usize] != "" {
@@ -480,16 +483,22 @@ impl ApplicationWindow {
             // If the needle can be converted to a number, we look up
             // the corresponding record
             let value: glib::Value = data.get_value(iter, Self::COLUMN_NUMBER as i32);
-            let number: &String = &value.get::<String>().unwrap();
+            let value: Option<String> = value.get::<String>();
 
-            number == filter_needle
+            match value {
+                Some(ref number) => number == filter_needle,
+                None => false,
+            }
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names
             let value: glib::Value = data.get_value(iter, Self::COLUMN_PEOPLE as i32);
-            let people: String = value.get::<String>().unwrap().to_lowercase();
+            let value: Option<String> = value.get::<String>();
 
-            people.contains(filter_needle)
+            match value {
+                Some(people) => people.to_lowercase().contains(filter_needle),
+                None => false,
+            }
         }
     }
 
@@ -538,15 +547,19 @@ impl ApplicationWindow {
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
-        let number: &String = &value.get::<String>().unwrap();
+        let value: Option<String> = value.get::<String>();
 
-        if text != number {
-            let record: [&glib::ToValue; 1] = [
-                &String::from(text),
-            ];
+        if value.is_some() {
+            let number: &String = &value.unwrap();
 
-            data.set(&iter, &[Self::COLUMN_NUMBER], &record);
-            self.set_dirty(true);
+            if text != number {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_NUMBER], &record);
+                self.set_dirty(true);
+            }
         }
     }
 
@@ -555,15 +568,19 @@ impl ApplicationWindow {
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, Self::COLUMN_PEOPLE as i32);
-        let people: &String = &value.get::<String>().unwrap();
+        let value: Option<String> = value.get::<String>();
 
-        if text != people {
-            let record: [&glib::ToValue; 1] = [
-                &String::from(text),
-            ];
+        if value.is_some() {
+            let people: &String = &value.unwrap();
 
-            data.set(&iter, &[Self::COLUMN_PEOPLE], &record);
-            self.set_dirty(true);
+            if text != people {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_PEOPLE], &record);
+                self.set_dirty(true);
+            }
         }
     }
 
@@ -572,15 +589,19 @@ impl ApplicationWindow {
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, Self::COLUMN_SIGNATURE as i32);
-        let signature: &String = &value.get::<String>().unwrap();
+        let value: Option<String> = value.get::<String>();
 
-        if text != signature {
-            let record: [&glib::ToValue; 1] = [
-                &String::from(text),
-            ];
+        if value.is_some() {
+            let signature: &String = &value.unwrap();
 
-            data.set(&iter, &[Self::COLUMN_SIGNATURE], &record);
-            self.set_dirty(true);
+            if text != signature {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_SIGNATURE], &record);
+                self.set_dirty(true);
+            }
         }
     }
 
@@ -589,15 +610,19 @@ impl ApplicationWindow {
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, Self::COLUMN_FLAGS as i32);
-        let flags: &String = &value.get::<String>().unwrap();
+        let value: Option<String> = value.get::<String>();
 
-        if text != flags {
-            let record: [&glib::ToValue; 1] = [
-                &String::from(text),
-            ];
+        if value.is_some() {
+            let flags: &String = &value.unwrap();
 
-            data.set(&iter, &[Self::COLUMN_FLAGS], &record);
-            self.set_dirty(true);
+            if text != flags {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_FLAGS], &record);
+                self.set_dirty(true);
+            }
         }
     }
 
@@ -606,15 +631,19 @@ impl ApplicationWindow {
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, Self::COLUMN_DATE as i32);
-        let date: &String = &value.get::<String>().unwrap();
+        let value: Option<String> = value.get::<String>();
 
-        if text != date {
-            let record: [&glib::ToValue; 1] = [
-                &String::from(text),
-            ];
+        if value.is_some() {
+            let date: &String = &value.unwrap();
 
-            data.set(&iter, &[Self::COLUMN_DATE], &record);
-            self.set_dirty(true);
+            if text != date {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_DATE], &record);
+                self.set_dirty(true);
+            }
         }
     }
 
