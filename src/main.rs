@@ -159,6 +159,12 @@ impl ApplicationWindow {
     }
 
     fn setup(&self) {
+        // Though formally deprecated, set_wmclass() seems to be the only way
+        // to reliably convince GNOME Shell to display the proper application
+        // name in the topbar, so it's staying :)
+        self.parent.set_wmclass("Tesserama", "Tesserama");
+        self.parent.set_title("Tesserama");
+
         self.parent.set_default_size(800, 600);
 
         let _self = self.clone();
