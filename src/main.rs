@@ -439,6 +439,39 @@ impl ApplicationWindow {
         self.stack.set_visible_child_name("contents");
     }
 
+    fn save_data(&self) {
+
+        let path: &PathBuf = &*self.source_filename.borrow();
+        let mut writer = csv::WriterBuilder::new()
+                         .has_headers(false)
+                         .from_path(path)
+                         .expect("Failed to open output file");
+
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let iter: gtk::TreeIter = data.get_iter_first().unwrap();
+
+        loop {
+            let mut record = csv::StringRecord::new();
+
+            for x in 0..5 {
+                let value: glib::Value = data.get_value(&iter, x);
+                let value: &String = &value.get::<String>().unwrap();
+
+                record.push_field(value);
+            }
+
+            if &record[Self::COLUMN_PEOPLE as usize] != "" {
+                writer.write_record(&record).expect("Failed to write output file");
+            }
+
+            if !data.iter_next(&iter) { break; }
+        }
+
+        writer.flush().expect("Failed to write output file");
+
+        self.set_dirty(false);
+    }
+
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
         let data: &gtk::ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
@@ -627,6 +660,10 @@ impl ApplicationWindow {
         dialog.destroy();
     }
 
+    fn save_action(&self) {
+        self.save_data();
+    }
+
     fn close_action(&self) -> glib::signal::Inhibit {
         // false means we want to close the window, true means
         // we don't, so we have to flip the result here
@@ -687,6 +724,7 @@ impl ApplicationWindow {
     }
 
     fn save_action_activated(&self) {
+        self.save_action();
     }
 
     fn number_cell_edited(&self, path: gtk::TreePath, text: &str) {
