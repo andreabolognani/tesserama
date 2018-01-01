@@ -683,20 +683,24 @@ impl ApplicationWindow {
         let data: &gtk::ListStore = &*self.data.borrow();
 
         let mut number: i32 = 1;
-        let iter: gtk::TreeIter = data.get_iter_first().unwrap();
+        let iter: Option<gtk::TreeIter> = data.get_iter_first();
 
-        loop {
-            let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
-            let value: Option<String> = value.get::<String>();
+        if iter.is_some() {
+            let iter: gtk::TreeIter = iter.unwrap();
 
-            if value.is_some() {
-                number = match value.unwrap().parse::<i32>() {
-                    Ok(value) => cmp::max(number, value + 1),
-                    Err(_) => number,
+            loop {
+                let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
+                let value: Option<String> = value.get::<String>();
+
+                if value.is_some() {
+                    number = match value.unwrap().parse::<i32>() {
+                        Ok(value) => cmp::max(number, value + 1),
+                        Err(_) => number,
+                    }
                 }
-            }
 
-            if !data.iter_next(&iter) { break; }
+                if !data.iter_next(&iter) { break; }
+            }
         }
 
         let number: String = fmt::format(format_args!("{}", number));
