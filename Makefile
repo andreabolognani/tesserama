@@ -18,6 +18,13 @@ release= \
 	--release \
 	$(NULL)
 endif
+ifeq ($(GPGSIGN),0)
+gpgsign=
+else
+gpgsign= \
+	--gpg-sign=$(KEYID) \
+	$(NULL)
+endif
 sdkextensions= \
 	--sdk-extension=org.freedesktop.Sdk.Extension.rust-stable \
 	$(NULL)
@@ -50,7 +57,7 @@ run: $(bin)
 
 publish: $(bin)
 	flatpak build-finish $(sockets) $(shares) $(filesystems) --command=tesserama $(builddir)
-	flatpak build-export $(repodir) $(builddir)
+	flatpak build-export $(gpgsign) $(repodir) $(builddir)
 	rm -rf $(builddir)
 
 clean:
