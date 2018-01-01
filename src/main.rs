@@ -450,6 +450,13 @@ impl ApplicationWindow {
         self.treeview.set_model(filtered_data);
 
         self.stack.set_visible_child_name("contents");
+
+        match gtk::RecentManager::get_default() {
+            Some(recents) => {
+                recents.add_item(&*self.source_uri.borrow());
+            },
+            None => {},
+        }
     }
 
     fn save_data(&self) {
