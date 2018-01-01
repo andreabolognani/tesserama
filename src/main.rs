@@ -739,6 +739,11 @@ impl ApplicationWindow {
     }
 
     fn open_action(&self) {
+        // Don't overwrite changes unless the user is okay with that
+        if !self.discard_changes_okay() {
+            return
+        }
+
         let dialog = gtk::FileChooserDialog::new(
             Some("Choose a file"),
             Some(&self.parent),
