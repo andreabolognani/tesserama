@@ -239,6 +239,7 @@ impl ApplicationWindow {
         menu.append("Open", "win.open");
         menu.append("Save", "win.save");
         self.menupopover.bind_model(&menu, None);
+        self.menupopover.set_relative_to(&self.menubutton);
 
         let _self = self.clone();
         self.menupopover.connect_closed(move |_| {
