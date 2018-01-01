@@ -30,7 +30,7 @@ shares= \
 	--share=ipc \
 	$(NULL)
 filesystems= \
-	--filesystem=home \
+	--filesystem=host \
 	$(NULL)
 
 all: $(bin)
