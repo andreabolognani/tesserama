@@ -10,21 +10,29 @@ not be very useful to anyone else.
 Requirements
 ------------
 
-Python 2 and GTK+ 3. Any relatively recent GNU/Linux distro, eg. Fedora 24
-or Ubuntu 16.04 LTS, should be able to run it just fine out of the box.
+GTK+ 3 is the only runtime requirement. The target distribution is Ubuntu
+16.04 LTS; anything newer than that should work just fine.
+
+
+Compilation
+-----------
+
+Tesserama can be built using `cargo`, but it's expected that compilation
+will happen through Flatpak. The provided `Makefile` can be used to both
+build (`make`) and test (`make run`) the software in a convenient way.
 
 
 Installation
 ------------
 
-For all users: copy `tesserama.py` to `/usr/bin` and `tesserama.desktop` to
-`/usr/share/application`.
+The recommended installation method is through Flatpak.
 
-For your user only: copy `tesserama` anywhere (`~/bin` is a good candidate),
-then adjust `Exec` and `TryExec` accordingly before copying it to
-`~/.local/share/applications`.
+    $ flatpak remote-add kiyuko.org --from https://kiyuko.org/flatpak/repo
+    $ flatpak install kiyuko.org org.kiyuko.Tesserama
 
-Or just run it straight from the source directory.
+The above assumes both Flatpak and Flathub (where the GNOME runtime, used
+by Tesserama, is hosted) have been configured properly. For information on
+how to do that, see the respective websites.
 
 
 Limitations
@@ -40,7 +48,7 @@ Some features are not discoverable, only partially by design.
 Future work
 -----------
 
-Remove limitations listed above, provide a Flatpak, rewrite in Rust.
+Address the limitations listed above.
 
 
 Resources
