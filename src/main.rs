@@ -110,7 +110,8 @@ impl ApplicationWindow {
     const COLUMN_PEOPLE: u32 = 2;
     const COLUMN_SIGNATURE: u32 = 3;
     const COLUMN_FLAGS: u32 = 4;
-    const COLUMN_LAST: usize = 5;
+    const COLUMN_ID: u32 = 5;
+    const COLUMN_LAST: usize = 6;
 
     const RECORD_TYPES: [gtk::Type; Self::COLUMN_LAST] = [
         gtk::Type::String, // COLUMN_DATE
@@ -118,6 +119,7 @@ impl ApplicationWindow {
         gtk::Type::String, // COLUMN_PEOPLE
         gtk::Type::String, // COLUMN_SIGNATURE
         gtk::Type::String, // COLUMN_FLAGS
+        gtk::Type::String, // COLUMN_ID
     ];
 
     fn new(app: &Application) -> Self {
@@ -308,6 +310,19 @@ impl ApplicationWindow {
         column.add_attribute(&signature_renderer, "text", Self::COLUMN_SIGNATURE as i32);
         self.treeview.append_column(&column);
 
+        let id_renderer = gtk::CellRendererText::new();
+        id_renderer.set_property_editable(true);
+        let _self = self.clone();
+        id_renderer.connect_edited(move |_, path, text| {
+            _self.id_cell_edited(path, text);
+        });
+        let column = gtk::TreeViewColumn::new();
+        column.set_title("ID");
+        column.set_sizing(gtk::TreeViewColumnSizing::GrowOnly);
+        column.pack_start(&id_renderer, false);
+        column.add_attribute(&id_renderer, "text", Self::COLUMN_ID as i32);
+        self.treeview.append_column(&column);
+
         let flags_renderer = gtk::CellRendererText::new();
         flags_renderer.set_alignment(1.0, 0.5);
         flags_renderer.set_property_editable(true);
@@ -432,6 +447,7 @@ impl ApplicationWindow {
                     String::new(),
                     String::new(),
                     String::new(),
+                    String::new(),
                 ];
 
                 // Extract values from the record. Missing fields default to
@@ -448,10 +464,11 @@ impl ApplicationWindow {
                     &values[2],
                     &values[3],
                     &values[4],
+                    &values[5],
                 ];
 
                 let iter = data.append();
-                data.set(&iter, &[0, 1, 2, 3, 4], &record);
+                data.set(&iter, &[0, 1, 2, 3, 4, 5], &record);
             }
         }
 
@@ -641,6 +658,27 @@ impl ApplicationWindow {
         }
     }
 
+    fn update_id(&self, path: gtk::TreePath, text: &str) {
+        let data: &gtk::ListStore = &*self.data.borrow();
+        let path: gtk::TreePath = self.convert_path(path);
+        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
+        let value: glib::Value = data.get_value(&iter, Self::COLUMN_ID as i32);
+        let value: Option<String> = value.get::<String>();
+
+        if value.is_some() {
+            let id: &String = &value.unwrap();
+
+            if text != id {
+                let record: [&glib::ToValue; 1] = [
+                    &String::from(text),
+                ];
+
+                data.set(&iter, &[Self::COLUMN_ID], &record);
+                self.set_dirty(true);
+            }
+        }
+    }
+
     fn update_flags(&self, path: gtk::TreePath, text: &str) {
         let data: &gtk::ListStore = &*self.data.borrow();
         let path: gtk::TreePath = self.convert_path(path);
@@ -727,6 +765,7 @@ impl ApplicationWindow {
         };
 
         let mut record: [&glib::ToValue; Self::COLUMN_LAST] = [
+            &String::new(),
             &String::new(),
             &String::new(),
             &String::new(),
@@ -863,6 +902,10 @@ impl ApplicationWindow {
 
     fn signature_cell_edited(&self, path: gtk::TreePath, text: &str) {
         self.update_signature(path, text);
+    }
+
+    fn id_cell_edited(&self, path: gtk::TreePath, text: &str) {
+        self.update_id(path, text);
     }
 
     fn flags_cell_edited(&self, path: gtk::TreePath, text: &str) {
