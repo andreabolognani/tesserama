@@ -110,8 +110,9 @@ impl ApplicationWindow {
     const COLUMN_PEOPLE: u32 = 2;
     const COLUMN_SIGNATURE: u32 = 3;
     const COLUMN_FLAGS: u32 = 4;
+    const COLUMN_LAST: usize = 5;
 
-    const RECORD_TYPES: [gtk::Type; 5] = [
+    const RECORD_TYPES: [gtk::Type; Self::COLUMN_LAST] = [
         gtk::Type::String, // COLUMN_DATE
         gtk::Type::String, // COLUMN_NUMBER
         gtk::Type::String, // COLUMN_PEOPLE
@@ -425,7 +426,7 @@ impl ApplicationWindow {
             if record.is_ok() {
                 let record: csv::StringRecord = record.unwrap();
 
-                let mut values: [String; 5] = [
+                let mut values: [String; Self::COLUMN_LAST] = [
                     String::new(),
                     String::new(),
                     String::new(),
@@ -441,7 +442,7 @@ impl ApplicationWindow {
                 }
 
                 // Convert the record to a format gtk::ListStore likes
-                let record: [&glib::ToValue; 5] = [
+                let record: [&glib::ToValue; Self::COLUMN_LAST] = [
                     &values[0],
                     &values[1],
                     &values[2],
@@ -488,8 +489,8 @@ impl ApplicationWindow {
         loop {
             let mut record = csv::StringRecord::new();
 
-            for x in 0..5 {
-                let value: glib::Value = data.get_value(&iter, x);
+            for x in 0..Self::COLUMN_LAST {
+                let value: glib::Value = data.get_value(&iter, x as i32);
                 let value: Option<String> = value.get::<String>();
 
                 match value {
@@ -725,7 +726,7 @@ impl ApplicationWindow {
             Err(_) => { String::new() },
         };
 
-        let mut record: [&glib::ToValue; 5] = [
+        let mut record: [&glib::ToValue; Self::COLUMN_LAST] = [
             &String::new(),
             &String::new(),
             &String::new(),
