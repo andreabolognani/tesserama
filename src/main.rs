@@ -425,13 +425,28 @@ impl ApplicationWindow {
             if record.is_ok() {
                 let record: csv::StringRecord = record.unwrap();
 
+                let mut values: [String; 5] = [
+                    String::new(),
+                    String::new(),
+                    String::new(),
+                    String::new(),
+                    String::new(),
+                ];
+
+                // Extract values from the record. Missing fields default to
+                // the empty string, so that it's possible to load files
+                // created using older versions of the application
+                for i in 0..record.len() {
+                    std::mem::replace(&mut values[i], String::from(&record[i]));
+                }
+
                 // Convert the record to a format gtk::ListStore likes
                 let record: [&glib::ToValue; 5] = [
-                    &String::from(&record[0]),
-                    &String::from(&record[1]),
-                    &String::from(&record[2]),
-                    &String::from(&record[3]),
-                    &String::from(&record[4]),
+                    &values[0],
+                    &values[1],
+                    &values[2],
+                    &values[3],
+                    &values[4],
                 ];
 
                 let iter = data.append();
