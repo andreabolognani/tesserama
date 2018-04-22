@@ -782,7 +782,7 @@ impl ApplicationWindow {
         let path: gtk::TreePath = data.get_path(&cell).unwrap();
 
         // Insert the fresh data
-        data.set(&cell, &[0, 1, 2, 3, 4], &record);
+        data.set(&cell, &[0, 1, 2, 3, 4, 5], &record);
 
         // Scroll to it and start editing right away
         self.treeview.scroll_to_cell(&path, None, false, 0.0, 0.0);
