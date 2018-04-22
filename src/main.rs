@@ -454,7 +454,7 @@ impl ApplicationWindow {
                 // the empty string, so that it's possible to load files
                 // created using older versions of the application
                 for i in 0..record.len() {
-                    std::mem::replace(&mut values[i], String::from(&record[i]));
+                    values[i] = String::from(&record[i]);
                 }
 
                 // Convert the record to a format gtk::ListStore likes
