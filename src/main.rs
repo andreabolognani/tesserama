@@ -467,8 +467,18 @@ impl ApplicationWindow {
                     &values[5],
                 ];
 
+                // We also need to create a list of indexes separately
+                let indexes: [u32; Self::COLUMN_LAST] = [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                ];
+
                 let iter = data.append();
-                data.set(&iter, &[0, 1, 2, 3, 4, 5], &record);
+                data.set(&iter, &indexes, &record);
             }
         }
 
@@ -764,6 +774,7 @@ impl ApplicationWindow {
             Err(_) => { String::new() },
         };
 
+        // Create an empty record
         let mut record: [&glib::ToValue; Self::COLUMN_LAST] = [
             &String::new(),
             &String::new(),
@@ -771,6 +782,16 @@ impl ApplicationWindow {
             &String::new(),
             &String::new(),
             &String::new(),
+        ];
+
+        // We also need to create a list of indexes separately
+        let indexes: [u32; Self::COLUMN_LAST] = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
         ];
 
         // Fill in some sensible data: the next number in the
@@ -782,7 +803,7 @@ impl ApplicationWindow {
         let path: gtk::TreePath = data.get_path(&cell).unwrap();
 
         // Insert the fresh data
-        data.set(&cell, &[0, 1, 2, 3, 4, 5], &record);
+        data.set(&cell, &indexes, &record);
 
         // Scroll to it and start editing right away
         self.treeview.scroll_to_cell(&path, None, false, 0.0, 0.0);
