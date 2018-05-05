@@ -605,127 +605,22 @@ impl ApplicationWindow {
         filtered_data.convert_path_to_child_path(&path).unwrap()
     }
 
-    fn update_number(&self, path: gtk::TreePath, text: &str) {
+    fn update_column(&self, path: gtk::TreePath, column: u32, text: &str) {
         let data: &gtk::ListStore = &*self.data.borrow();
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_NUMBER as i32);
+        let value: glib::Value = data.get_value(&iter, column as i32);
         let value: Option<String> = value.get::<String>();
 
         if value.is_some() {
-            let number: &String = &value.unwrap();
+            let current: &String = &value.unwrap();
 
-            if text != number {
+            if text != current {
                 let record: [&glib::ToValue; 1] = [
                     &String::from(text),
                 ];
 
-                data.set(&iter, &[Self::COLUMN_NUMBER], &record);
-                self.set_dirty(true);
-            }
-        }
-    }
-
-    fn update_people(&self, path: gtk::TreePath, text: &str) {
-        let data: &gtk::ListStore = &*self.data.borrow();
-        let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_PEOPLE as i32);
-        let value: Option<String> = value.get::<String>();
-
-        if value.is_some() {
-            let people: &String = &value.unwrap();
-
-            if text != people {
-                let record: [&glib::ToValue; 1] = [
-                    &String::from(text),
-                ];
-
-                data.set(&iter, &[Self::COLUMN_PEOPLE], &record);
-                self.set_dirty(true);
-            }
-        }
-    }
-
-    fn update_signature(&self, path: gtk::TreePath, text: &str) {
-        let data: &gtk::ListStore = &*self.data.borrow();
-        let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_SIGNATURE as i32);
-        let value: Option<String> = value.get::<String>();
-
-        if value.is_some() {
-            let signature: &String = &value.unwrap();
-
-            if text != signature {
-                let record: [&glib::ToValue; 1] = [
-                    &String::from(text),
-                ];
-
-                data.set(&iter, &[Self::COLUMN_SIGNATURE], &record);
-                self.set_dirty(true);
-            }
-        }
-    }
-
-    fn update_id(&self, path: gtk::TreePath, text: &str) {
-        let data: &gtk::ListStore = &*self.data.borrow();
-        let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_ID as i32);
-        let value: Option<String> = value.get::<String>();
-
-        if value.is_some() {
-            let id: &String = &value.unwrap();
-
-            if text != id {
-                let record: [&glib::ToValue; 1] = [
-                    &String::from(text),
-                ];
-
-                data.set(&iter, &[Self::COLUMN_ID], &record);
-                self.set_dirty(true);
-            }
-        }
-    }
-
-    fn update_flags(&self, path: gtk::TreePath, text: &str) {
-        let data: &gtk::ListStore = &*self.data.borrow();
-        let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_FLAGS as i32);
-        let value: Option<String> = value.get::<String>();
-
-        if value.is_some() {
-            let flags: &String = &value.unwrap();
-
-            if text != flags {
-                let record: [&glib::ToValue; 1] = [
-                    &String::from(text),
-                ];
-
-                data.set(&iter, &[Self::COLUMN_FLAGS], &record);
-                self.set_dirty(true);
-            }
-        }
-    }
-
-    fn update_date(&self, path: gtk::TreePath, text: &str) {
-        let data: &gtk::ListStore = &*self.data.borrow();
-        let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: glib::Value = data.get_value(&iter, Self::COLUMN_DATE as i32);
-        let value: Option<String> = value.get::<String>();
-
-        if value.is_some() {
-            let date: &String = &value.unwrap();
-
-            if text != date {
-                let record: [&glib::ToValue; 1] = [
-                    &String::from(text),
-                ];
-
-                data.set(&iter, &[Self::COLUMN_DATE], &record);
+                data.set(&iter, &[column], &record);
                 self.set_dirty(true);
             }
         }
@@ -914,27 +809,27 @@ impl ApplicationWindow {
     }
 
     fn number_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_number(path, text);
+        self.update_column(path, Self::COLUMN_NUMBER, text);
     }
 
     fn people_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_people(path, text);
+        self.update_column(path, Self::COLUMN_PEOPLE, text);
     }
 
     fn signature_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_signature(path, text);
+        self.update_column(path, Self::COLUMN_SIGNATURE, text);
     }
 
     fn id_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_id(path, text);
+        self.update_column(path, Self::COLUMN_ID, text);
     }
 
     fn flags_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_flags(path, text);
+        self.update_column(path, Self::COLUMN_FLAGS, text);
     }
 
     fn date_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_date(path, text);
+        self.update_column(path, Self::COLUMN_DATE, text);
     }
 
     fn delete_event(&self) -> glib::signal::Inhibit {
