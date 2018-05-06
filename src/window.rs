@@ -462,7 +462,19 @@ impl Window {
             data.get_value(iter, &Column::People).map_or(false, |people| {
                 let people = people.to_lowercase();
 
-                people.contains(filter_needle)
+                // Most entries are in the form
+                //
+                //   LastName FirstName, OtherFirstName
+                //
+                // to save on typing.
+                //
+                // We want such an entry to match when searching for
+                // "LastName OtherFirstName", and in order to do that we
+                // have to split the needle into chunks and check whether
+                // all of them are contained in the entry
+                filter_needle.split_whitespace().all(|chunk| {
+                    people.contains(chunk)
+                })
             })
         }
     }
