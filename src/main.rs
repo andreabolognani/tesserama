@@ -782,13 +782,10 @@ impl ApplicationWindow {
         // Create an empty record
         let mut values = ListStore::new_row();
 
-        let number_column: usize = Column::Number.into();
-        let date_column: usize = Column::Date.into();
-
         // Fill in some sensible data: the next number in the
         // sequence and today's date
-        values[number_column] = number;
-        values[date_column] = date;
+        values[usize::from(Column::Number)] = number;
+        values[usize::from(Column::Date)] = date;
 
         let iter: gtk::TreeIter = data.append();
         let path: gtk::TreePath = data.get_path(&iter).unwrap();
