@@ -60,10 +60,30 @@ impl From<Column> for u8 {
     }
 }
 
+impl From<u8> for Column {
+    fn from(n: u8) -> Column {
+        match n {
+            0 => Column::Date,
+            1 => Column::Number,
+            2 => Column::People,
+            3 => Column::Signature,
+            4 => Column::Flags,
+            5 => Column::ID,
+            _ => panic!("Numeric value {} can't be converted to column", n),
+        }
+    }
+}
+
 impl From<Column> for u32 {
     fn from(c: Column) -> u32 {
         let c: u8 = c.into();
         c as u32
+    }
+}
+
+impl From<u32> for Column {
+    fn from(n: u32) -> Column {
+        Column::from(n as u8)
     }
 }
 
@@ -74,10 +94,22 @@ impl From<Column> for i32 {
     }
 }
 
+impl From<i32> for Column {
+    fn from(n: i32) -> Column {
+        Column::from(n as u8)
+    }
+}
+
 impl From<Column> for usize {
     fn from(c: Column) -> usize {
         let c: u8 = c.into();
         c as usize
+    }
+}
+
+impl From<usize> for Column {
+    fn from(n: usize) -> Column {
+        Column::from(n as u8)
     }
 }
 
