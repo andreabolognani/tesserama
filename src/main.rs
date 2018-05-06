@@ -114,6 +114,45 @@ impl From<usize> for Column {
     }
 }
 
+#[derive(Clone)]
+struct SimpleAction {
+    parent: gio::SimpleAction,
+}
+
+impl SimpleAction {
+    fn new(name: &str) -> Self {
+        Self {
+            parent: gio::SimpleAction::new(name, None),
+        }
+    }
+
+    fn new_stateful(name: &str, state: bool) -> Self {
+        Self {
+            parent: gio::SimpleAction::new_stateful(
+                name,
+                None,
+                &state.to_variant(),
+            )
+        }
+    }
+
+    fn get_state(&self) -> Option<bool> {
+        self.parent.get_state().and_then(|v| { v.get() })
+    }
+
+    fn set_state(&self, state: bool) {
+        self.parent.set_state(&state.to_variant());
+    }
+
+    fn set_enabled(&self, enabled: bool) {
+        self.parent.set_enabled(enabled);
+    }
+
+    fn as_parent(&self) -> &gio::SimpleAction {
+        &self.parent
+    }
+}
+
 struct ListStore {
     parent: gtk::ListStore,
 }
@@ -254,11 +293,11 @@ struct ApplicationWindow {
     searchbar: gtk::SearchBar,
     treeview: gtk::TreeView,
     peoplecolumn: gtk::TreeViewColumn,
-    searchaction: gio::SimpleAction,
-    insertaction: gio::SimpleAction,
-    menuaction: gio::SimpleAction,
-    openaction: gio::SimpleAction,
-    saveaction: gio::SimpleAction,
+    searchaction: SimpleAction,
+    insertaction: SimpleAction,
+    menuaction: SimpleAction,
+    openaction: SimpleAction,
+    saveaction: SimpleAction,
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
     dirty: Rc<RefCell<bool>>,
@@ -285,19 +324,11 @@ impl ApplicationWindow {
             searchbar: gtk::SearchBar::new(),
             treeview: gtk::TreeView::new(),
             peoplecolumn: gtk::TreeViewColumn::new(),
-            searchaction: gio::SimpleAction::new_stateful(
-                "search",
-                None,
-                &false.to_variant(),
-            ),
-            insertaction: gio::SimpleAction::new("insert", None),
-            menuaction: gio::SimpleAction::new_stateful(
-                "menu",
-                None,
-                &false.to_variant(),
-            ),
-            openaction: gio::SimpleAction::new("open", None),
-            saveaction: gio::SimpleAction::new("save", None),
+            searchaction: SimpleAction::new_stateful("search", false),
+            insertaction: SimpleAction::new("insert"),
+            menuaction: SimpleAction::new_stateful("menu", false),
+            openaction: SimpleAction::new("open"),
+            saveaction: SimpleAction::new("save"),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),
             source_uri: Rc::new(RefCell::new(String::new())),
             dirty: Rc::new(RefCell::new(false)),
@@ -326,37 +357,37 @@ impl ApplicationWindow {
         /* Actions */
 
         let _self = self.clone();
-        self.searchaction.connect_activate(move |_,_| {
+        self.searchaction.as_parent().connect_activate(move |_,_| {
             _self.search_action_activated();
         });
         self.searchaction.set_enabled(false);
-        self.parent.add_action(&self.searchaction);
+        self.parent.add_action(self.searchaction.as_parent());
 
         let _self = self.clone();
-        self.insertaction.connect_activate(move |_,_| {
+        self.insertaction.as_parent().connect_activate(move |_,_| {
             _self.insert_action_activated();
         });
         self.insertaction.set_enabled(false);
-        self.parent.add_action(&self.insertaction);
+        self.parent.add_action(self.insertaction.as_parent());
 
         let _self = self.clone();
-        self.menuaction.connect_activate(move |_,_| {
+        self.menuaction.as_parent().connect_activate(move |_,_| {
             _self.menu_action_activated();
         });
-        self.parent.add_action(&self.menuaction);
+        self.parent.add_action(self.menuaction.as_parent());
 
         let _self = self.clone();
-        self.openaction.connect_activate(move |_,_| {
+        self.openaction.as_parent().connect_activate(move |_,_| {
             _self.open_action_activated();
         });
-        self.parent.add_action(&self.openaction);
+        self.parent.add_action(self.openaction.as_parent());
 
         let _self = self.clone();
-        self.saveaction.connect_activate(move |_,_| {
+        self.saveaction.as_parent().connect_activate(move |_,_| {
             _self.save_action_activated();
         });
         self.saveaction.set_enabled(false);
-        self.parent.add_action(&self.saveaction);
+        self.parent.add_action(self.saveaction.as_parent());
 
         /* Header bar */
 
@@ -846,11 +877,9 @@ impl ApplicationWindow {
     // Signal handlers
 
     fn search_action_activated(&self) {
-        let variant: glib::Variant = self.searchaction.get_state().unwrap();
-        let state: bool = variant.get().unwrap();
-        let state = !state;
+        let state = !self.searchaction.get_state().unwrap();
 
-        self.searchaction.set_state(&state.to_variant());
+        self.searchaction.set_state(state);
 
         if state {
             self.start_search_action();
@@ -864,7 +893,7 @@ impl ApplicationWindow {
     }
 
     fn stop_search(&self) {
-        self.searchaction.set_state(&false.to_variant());
+        self.searchaction.set_state(false);
 
         // A bit redundant, but guarantees we perform the same teardown
         // steps regardless of how the search has been interrupted
@@ -876,11 +905,9 @@ impl ApplicationWindow {
     }
 
     fn menu_action_activated(&self) {
-        let variant: glib::Variant = self.menuaction.get_state().unwrap();
-        let state: bool = variant.get().unwrap();
-        let state = !state;
+        let state = !self.menuaction.get_state().unwrap();
 
-        self.menuaction.set_state(&state.to_variant());
+        self.menuaction.set_state(state);
 
         if state {
             self.start_menu_action();
@@ -890,7 +917,7 @@ impl ApplicationWindow {
     }
 
     fn menu_popover_closed(&self) {
-        self.menuaction.set_state(&false.to_variant());
+        self.menuaction.set_state(false);
     }
 
     fn open_action_activated(&self) {
