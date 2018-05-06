@@ -276,12 +276,12 @@ impl Application {
     }
 
     fn activate_action(&self) {
-        ApplicationWindow::new(&self).show_all();
+        Window::new(&self).show_all();
     }
 }
 
 #[derive(Clone)]
-struct ApplicationWindow {
+struct Window {
     parent: gtk::ApplicationWindow,
     headerbar: gtk::HeaderBar,
     searchbutton: gtk::ToggleButton,
@@ -306,7 +306,7 @@ struct ApplicationWindow {
     filter_needle: Rc<RefCell<String>>,
 }
 
-impl ApplicationWindow {
+impl Window {
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
