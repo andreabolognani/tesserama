@@ -34,6 +34,7 @@ use gio::prelude::*;
 use gio::MenuExt;
 use gtk::prelude::*;
 
+#[derive(Clone)]
 enum Column {
     Date,
     Number,
