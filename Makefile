@@ -3,7 +3,7 @@ NULL=
 builddir=flatpak/build
 repodir=flatpak/repo
 
-src=src/main.rs
+src=src/*.rs
 bin=$(builddir)/files/bin/tesserama
 
 ifneq ($(ARCH),)
