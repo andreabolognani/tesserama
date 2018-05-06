@@ -81,6 +81,59 @@ impl From<Column> for usize {
     }
 }
 
+struct ListStore {
+    parent: gtk::ListStore,
+}
+
+impl ListStore {
+    const RECORD_TYPES: [gtk::Type; Column::SIZE] = [
+        gtk::Type::String,
+        gtk::Type::String,
+        gtk::Type::String,
+        gtk::Type::String,
+        gtk::Type::String,
+        gtk::Type::String,
+    ];
+
+    fn new() -> Self {
+        Self {
+            parent: gtk::ListStore::new(&Self::RECORD_TYPES),
+        }
+    }
+
+    fn append(&self) -> gtk::TreeIter {
+        self.parent.append()
+    }
+
+    fn set(&self, iter: &gtk::TreeIter, columns: &[u32], values: &[&glib::ToValue]) {
+        self.parent.set(iter, columns, values);
+    }
+
+    fn get_value(&self, iter: &gtk::TreeIter, column: i32) -> glib::Value {
+        self.parent.get_value(iter, column)
+    }
+
+    fn get_path(&self, iter: &gtk::TreeIter) -> Option<gtk::TreePath> {
+        self.parent.get_path(iter)
+    }
+
+    fn get_iter(&self, path: &gtk::TreePath) -> Option<gtk::TreeIter> {
+        self.parent.get_iter(path)
+    }
+
+    fn get_iter_first(&self) -> Option<gtk::TreeIter> {
+        self.parent.get_iter_first()
+    }
+
+    fn iter_next(&self, iter: &gtk::TreeIter) -> bool {
+        self.parent.iter_next(iter)
+    }
+
+    fn create_filter(&self) -> gtk::TreeModelFilter {
+        gtk::TreeModelFilter::new(&self.parent, None)
+    }
+}
+
 #[derive(Clone)]
 struct Application {
     parent: gtk::Application,
@@ -146,26 +199,17 @@ struct ApplicationWindow {
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
     dirty: Rc<RefCell<bool>>,
-    data: Rc<RefCell<gtk::ListStore>>,
+    data: Rc<RefCell<ListStore>>,
     filtered_data: Rc<RefCell<gtk::TreeModelFilter>>,
     filter_needle: Rc<RefCell<String>>,
 }
 
 impl ApplicationWindow {
-    const RECORD_TYPES: [gtk::Type; Column::SIZE] = [
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-    ];
-
     fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
         let menupopover = gtk::Popover::new(&menubutton);
-        let data = gtk::ListStore::new(&Self::RECORD_TYPES);
-        let filtered_data = gtk::TreeModelFilter::new(&data, None);
+        let data = ListStore::new();
+        let filtered_data = data.create_filter();
         let ret = Self {
             parent: app.create_window(),
             headerbar: gtk::HeaderBar::new(),
@@ -462,12 +506,12 @@ impl ApplicationWindow {
             let mut filtered_data = self.filtered_data.borrow_mut();
             let mut filter_needle = self.filter_needle.borrow_mut();
 
-            *data = gtk::ListStore::new(&Self::RECORD_TYPES);
-            *filtered_data = gtk::TreeModelFilter::new(&*data, None);
+            *data = ListStore::new();
+            *filtered_data = data.create_filter();
             *filter_needle = String::new();
         }
 
-        let data: &gtk::ListStore = &*self.data.borrow();
+        let data: &ListStore = &*self.data.borrow();
         let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
         let path: &PathBuf = &*self.source_filename.borrow();
 
@@ -549,7 +593,7 @@ impl ApplicationWindow {
                          .from_path(path)
                          .expect("Failed to open output file");
 
-        let data: &gtk::ListStore = &*self.data.borrow();
+        let data: &ListStore = &*self.data.borrow();
         let iter: gtk::TreeIter = data.get_iter_first().unwrap();
 
         loop {
@@ -578,7 +622,7 @@ impl ApplicationWindow {
     }
 
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
-        let data: &gtk::ListStore = &*self.data.borrow();
+        let data: &ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
 
         if filter_needle.parse::<i32>().is_ok() {
@@ -646,7 +690,7 @@ impl ApplicationWindow {
 
     fn update_column(&self, path: gtk::TreePath, column: Column, text: &str) {
         let column: u8 = column.into();
-        let data: &gtk::ListStore = &*self.data.borrow();
+        let data: &ListStore = &*self.data.borrow();
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
         let value: glib::Value = data.get_value(&iter, column as i32);
@@ -679,7 +723,7 @@ impl ApplicationWindow {
     }
 
     fn insert_action(&self) {
-        let data: &gtk::ListStore = &*self.data.borrow();
+        let data: &ListStore = &*self.data.borrow();
 
         let mut number: i32 = 1;
         let iter: Option<gtk::TreeIter> = data.get_iter_first();
