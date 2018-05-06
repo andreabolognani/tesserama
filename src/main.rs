@@ -802,11 +802,11 @@ impl ApplicationWindow {
         values[number_column] = number;
         values[date_column] = date;
 
-        let cell: gtk::TreeIter = data.append();
-        let path: gtk::TreePath = data.get_path(&cell).unwrap();
+        let iter: gtk::TreeIter = data.append();
+        let path: gtk::TreePath = data.get_path(&iter).unwrap();
 
         // Insert the fresh data
-        data.set_all_values(&cell, &values);
+        data.set_all_values(&iter, &values);
 
         // Scroll to it and start editing right away
         self.treeview.scroll_to_cell(&path, None, false, 0.0, 0.0);
