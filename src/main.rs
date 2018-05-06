@@ -119,18 +119,9 @@ struct ListStore {
 }
 
 impl ListStore {
-    const RECORD_TYPES: [gtk::Type; Column::SIZE] = [
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-        gtk::Type::String,
-    ];
-
     fn new() -> Self {
         Self {
-            parent: gtk::ListStore::new(&Self::RECORD_TYPES),
+            parent: gtk::ListStore::new(&[gtk::Type::String; Column::SIZE]),
         }
     }
 
