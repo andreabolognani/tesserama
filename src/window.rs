@@ -447,36 +447,47 @@ impl Window {
     }
 
     fn filter_func(&self, iter: &gtk::TreeIter) -> bool {
-        let data: &ListStore = &*self.data.borrow();
         let filter_needle: &String = &*self.filter_needle.borrow();
 
         if filter_needle.parse::<i32>().is_ok() {
             // If the needle can be converted to a number, we look up
             // the corresponding record
-            data.get_value(iter, &Column::Number).map_or(false, |number| {
-                &number == filter_needle
-            })
+            self.value_matches(iter, &Column::Number, filter_needle)
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names
-            data.get_value(iter, &Column::People).map_or(false, |people| {
-                let people = people.to_lowercase();
-
-                // Most entries are in the form
-                //
-                //   LastName FirstName, OtherFirstName
-                //
-                // to save on typing.
-                //
-                // We want such an entry to match when searching for
-                // "LastName OtherFirstName", and in order to do that we
-                // have to split the needle into chunks and check whether
-                // all of them are contained in the entry
-                filter_needle.split_whitespace().all(|chunk| {
-                    people.contains(chunk)
-                })
-            })
+            self.value_contains(iter, &Column::People, filter_needle)
         }
+    }
+
+    fn value_matches(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
+        let data: &ListStore = &*self.data.borrow();
+
+        data.get_value(iter, column).map_or(false, |value| {
+            &value == needle
+        })
+    }
+
+    fn value_contains(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
+        let data: &ListStore = &*self.data.borrow();
+
+        data.get_value(iter, column).map_or(false, |value| {
+            let value = value.to_lowercase();
+
+            // Most entries are in the form
+            //
+            //   LastName FirstName, OtherFirstName
+            //
+            // to save on typing.
+            //
+            // We want such an entry to match when searching for
+            // "LastName OtherFirstName", and in order to do that we
+            // have to split the needle into chunks and check whether
+            // all of them are contained in the entry
+            needle.split_whitespace().all(|chunk| {
+                value.contains(chunk)
+            })
+        })
     }
 
     // Returns true if it's okay to discard changes in the current
