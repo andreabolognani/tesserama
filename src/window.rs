@@ -453,21 +453,17 @@ impl Window {
         if filter_needle.parse::<i32>().is_ok() {
             // If the needle can be converted to a number, we look up
             // the corresponding record
-            let value: Option<String> = data.get_value(iter, &Column::Number);
-
-            match value {
-                Some(ref number) => number == filter_needle,
-                None => false,
-            }
+            data.get_value(iter, &Column::Number).map_or(false, |number| {
+                &number == filter_needle
+            })
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names
-            let value: Option<String> = data.get_value(iter, &Column::People);
+            data.get_value(iter, &Column::People).map_or(false, |people| {
+                let people = people.to_lowercase();
 
-            match value {
-                Some(people) => people.to_lowercase().contains(filter_needle),
-                None => false,
-            }
+                people.contains(filter_needle)
+            })
         }
     }
 
