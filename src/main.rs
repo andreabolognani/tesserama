@@ -138,16 +138,16 @@ impl ListStore {
         self.parent.append()
     }
 
-    fn get_value(&self, iter: &gtk::TreeIter, column: Column) -> Option<String> {
-        self.parent.get_value(iter, column.into()).get::<String>()
+    fn get_value(&self, iter: &gtk::TreeIter, column: &Column) -> Option<String> {
+        self.parent.get_value(iter, i32::from(column.clone())).get::<String>()
     }
 
-    fn set_value(&self, iter: &gtk::TreeIter, column: Column, value: String) {
+    fn set_value(&self, iter: &gtk::TreeIter, column: &Column, value: &String) {
         let record: [&glib::ToValue; 1] = [
-            &value,
+            value,
         ];
         let indexes: [u32; 1] = [
-            column.into(),
+            u32::from(column.clone()),
         ];
 
         self.parent.set(iter, &indexes, &record);
@@ -641,7 +641,7 @@ impl ApplicationWindow {
             let mut record = csv::StringRecord::new();
 
             for x in 0..Column::SIZE {
-                let value: Option<String> = data.get_value(&iter, Column::from(x));
+                let value: Option<String> = data.get_value(&iter, &Column::from(x));
 
                 match value {
                     Some(ref field) => record.push_field(field),
@@ -668,7 +668,7 @@ impl ApplicationWindow {
         if filter_needle.parse::<i32>().is_ok() {
             // If the needle can be converted to a number, we look up
             // the corresponding record
-            let value: Option<String> = data.get_value(iter, Column::Number);
+            let value: Option<String> = data.get_value(iter, &Column::Number);
 
             match value {
                 Some(ref number) => number == filter_needle,
@@ -677,7 +677,7 @@ impl ApplicationWindow {
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names
-            let value: Option<String> = data.get_value(iter, Column::People);
+            let value: Option<String> = data.get_value(iter, &Column::People);
 
             match value {
                 Some(people) => people.to_lowercase().contains(filter_needle),
@@ -726,17 +726,17 @@ impl ApplicationWindow {
         filtered_data.convert_path_to_child_path(&path).unwrap()
     }
 
-    fn update_column(&self, path: gtk::TreePath, column: Column, text: &str) {
+    fn update_column(&self, path: gtk::TreePath, column: &Column, text: &str) {
         let data: &ListStore = &*self.data.borrow();
         let path: gtk::TreePath = self.convert_path(path);
         let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: Option<String> = data.get_value(&iter, column.clone());
+        let value: Option<String> = data.get_value(&iter, column);
 
         if value.is_some() {
             let current: &String = &value.unwrap();
 
             if text != current {
-                data.set_value(&iter, column, String::from(text));
+                data.set_value(&iter, column, &String::from(text));
                 self.set_dirty(true);
             }
         }
@@ -764,7 +764,7 @@ impl ApplicationWindow {
             let iter: gtk::TreeIter = iter.unwrap();
 
             loop {
-                let value: Option<String> = data.get_value(&iter, Column::Number);
+                let value: Option<String> = data.get_value(&iter, &Column::Number);
 
                 if value.is_some() {
                     number = match value.unwrap().parse::<i32>() {
@@ -917,27 +917,27 @@ impl ApplicationWindow {
     }
 
     fn number_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::Number, text);
+        self.update_column(path, &Column::Number, text);
     }
 
     fn people_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::People, text);
+        self.update_column(path, &Column::People, text);
     }
 
     fn signature_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::Signature, text);
+        self.update_column(path, &Column::Signature, text);
     }
 
     fn id_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::ID, text);
+        self.update_column(path, &Column::ID, text);
     }
 
     fn flags_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::Flags, text);
+        self.update_column(path, &Column::Flags, text);
     }
 
     fn date_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, Column::Date, text);
+        self.update_column(path, &Column::Date, text);
     }
 
     fn delete_event(&self) -> glib::signal::Inhibit {
