@@ -47,8 +47,8 @@ impl SimpleAction {
         self.parent.get_state().and_then(|v| { v.get() })
     }
 
-    pub fn set_state(&self, state: bool) {
-        self.parent.set_state(&state.to_variant());
+    pub fn change_state(&self, state: bool) {
+        self.parent.change_state(&state.to_variant());
     }
 
     pub fn set_enabled(&self, enabled: bool) {

@@ -638,7 +638,7 @@ impl Window {
     fn search_action_activated(&self) {
         let state = !self.searchaction.get_state().unwrap();
 
-        self.searchaction.set_state(state);
+        self.searchaction.change_state(state);
 
         if state {
             self.start_search_action();
@@ -652,7 +652,7 @@ impl Window {
     }
 
     fn stop_search(&self) {
-        self.searchaction.set_state(false);
+        self.searchaction.change_state(false);
 
         // A bit redundant, but guarantees we perform the same teardown
         // steps regardless of how the search has been interrupted
@@ -666,7 +666,7 @@ impl Window {
     fn menu_action_activated(&self) {
         let state = !self.menuaction.get_state().unwrap();
 
-        self.menuaction.set_state(state);
+        self.menuaction.change_state(state);
 
         if state {
             self.start_menu_action();
@@ -676,7 +676,7 @@ impl Window {
     }
 
     fn menu_popover_closed(&self) {
-        self.menuaction.set_state(false);
+        self.menuaction.change_state(false);
     }
 
     fn open_action_activated(&self) {
