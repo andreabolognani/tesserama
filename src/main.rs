@@ -134,6 +134,17 @@ impl ListStore {
         }
     }
 
+    fn new_row() -> [String; Column::SIZE] {
+        [
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ]
+    }
+
     fn append(&self) -> gtk::TreeIter {
         self.parent.append()
     }
@@ -585,14 +596,7 @@ impl ApplicationWindow {
             if record.is_ok() {
                 let record: csv::StringRecord = record.unwrap();
 
-                let mut values: [String; Column::SIZE] = [
-                    String::new(),
-                    String::new(),
-                    String::new(),
-                    String::new(),
-                    String::new(),
-                    String::new(),
-                ];
+                let mut values = ListStore::new_row();
 
                 // Extract values from the record. Missing fields default to
                 // the empty string, so that it's possible to load files
@@ -785,14 +789,7 @@ impl ApplicationWindow {
         };
 
         // Create an empty record
-        let mut values: [String; Column::SIZE] = [
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-        ];
+        let mut values = ListStore::new_row();
 
         let number_column: usize = Column::Number.into();
         let date_column: usize = Column::Date.into();
