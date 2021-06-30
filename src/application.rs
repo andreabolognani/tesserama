@@ -19,8 +19,6 @@ extern crate glib;
 extern crate gio;
 extern crate gtk;
 
-use std::env;
-
 use self::gio::prelude::*;
 use self::gtk::prelude::*;
 
@@ -35,8 +33,7 @@ impl Application {
     pub fn new() -> Self {
         let flags = gio::ApplicationFlags::empty();
         let ret = Self {
-            parent: gtk::Application::new(None, flags)
-                    .expect("GTK+ initialization error"),
+            parent: gtk::Application::new(None, flags),
         };
         ret.setup();
         ret
@@ -57,8 +54,7 @@ impl Application {
     }
 
     pub fn run(&self) {
-        let args: Vec<String> = env::args().collect();
-        self.parent.run(&args);
+        self.parent.run();
     }
 
     pub fn create_window(&self) -> gtk::ApplicationWindow {

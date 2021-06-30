@@ -31,7 +31,6 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use self::gio::prelude::*;
-use self::gio::MenuExt;
 use self::gtk::prelude::*;
 
 use super::column::Column;
@@ -68,14 +67,14 @@ pub struct Window {
 impl Window {
     pub fn new(app: &Application) -> Self {
         let menubutton = gtk::ToggleButton::new();
-        let menupopover = gtk::Popover::new(&menubutton);
+        let menupopover = gtk::Popover::new(Some(&menubutton));
         let data = ListStore::new();
         let filtered_data = data.create_filter();
         let ret = Self {
             parent: app.create_window(),
             headerbar: gtk::HeaderBar::new(),
             searchbutton: gtk::ToggleButton::new(),
-            insertbutton: gtk::Button::new_with_label("Insert"),
+            insertbutton: gtk::Button::with_label("Insert"),
             menubutton: menubutton,
             menupopover: menupopover,
             stack: gtk::Stack::new(),
@@ -151,34 +150,34 @@ impl Window {
         /* Header bar */
 
         self.headerbar.set_show_close_button(true);
-        self.parent.set_titlebar(&self.headerbar);
+        self.parent.set_titlebar(Some(&self.headerbar));
 
-        let image = gtk::Image::new_from_icon_name(
-            "edit-find-symbolic",
-            gtk::IconSize::Button.into(),
+        let image = gtk::Image::from_icon_name(
+            Some("edit-find-symbolic"),
+            gtk::IconSize::Button,
         );
-        self.searchbutton.set_image(&image);
-        self.searchbutton.set_tooltip_text("Search");
-        self.searchbutton.set_action_name("win.search");
+        self.searchbutton.set_image(Some(&image));
+        self.searchbutton.set_tooltip_text(Some("Search"));
+        self.searchbutton.set_action_name(Some("win.search"));
         self.headerbar.pack_start(&self.searchbutton);
 
-        self.insertbutton.set_action_name("win.insert");
+        self.insertbutton.set_action_name(Some("win.insert"));
         self.headerbar.pack_start(&self.insertbutton);
 
-        let image = gtk::Image::new_from_icon_name(
-            "open-menu-symbolic",
-            gtk::IconSize::Button.into(),
+        let image = gtk::Image::from_icon_name(
+            Some("open-menu-symbolic"),
+            gtk::IconSize::Button,
         );
-        self.menubutton.set_image(&image);
-        self.menubutton.set_tooltip_text("Menu");
-        self.menubutton.set_action_name("win.menu");
+        self.menubutton.set_image(Some(&image));
+        self.menubutton.set_tooltip_text(Some("Menu"));
+        self.menubutton.set_action_name(Some("win.menu"));
         self.headerbar.pack_end(&self.menubutton);
 
         let menu = gio::Menu::new();
-        menu.append("Open", "win.open");
-        menu.append("Save", "win.save");
-        self.menupopover.bind_model(&menu, None);
-        self.menupopover.set_relative_to(&self.menubutton);
+        menu.append(Some("Open"), Some("win.open"));
+        menu.append(Some("Save"), Some("win.save"));
+        self.menupopover.bind_model(Some(&menu), None);
+        self.menupopover.set_relative_to(Some(&self.menubutton));
 
         let _self = self.clone();
         self.menupopover.connect_closed(move |_| {
@@ -187,7 +186,7 @@ impl Window {
 
         /* Empty application */
 
-        let empty = gtk::Label::new("");
+        let empty = gtk::Label::new(None);
 
         /* Application contents */
 
@@ -209,8 +208,8 @@ impl Window {
         self.treeview.set_enable_search(false);
 
         let number_renderer = gtk::CellRendererText::new();
-        number_renderer.set_alignment(1.0, 0.5);
-        number_renderer.set_property_editable(true);
+        CellRendererExt::set_alignment(&number_renderer, 1.0, 0.5);
+        number_renderer.set_editable(true);
         let _self = self.clone();
         number_renderer.connect_edited(move |_, path, text| {
             _self.number_cell_edited(path, text);
@@ -221,8 +220,8 @@ impl Window {
         self.treeview.append_column(&column);
 
         let people_renderer = gtk::CellRendererText::new();
-        people_renderer.set_property_ellipsize(pango::EllipsizeMode::End);
-        people_renderer.set_property_editable(true);
+        people_renderer.set_ellipsize(pango::EllipsizeMode::End);
+        people_renderer.set_editable(true);
         let _self = self.clone();
         people_renderer.connect_edited(move |_, path, text| {
             _self.people_cell_edited(path, text);
@@ -234,7 +233,7 @@ impl Window {
         self.treeview.append_column(&self.peoplecolumn);
 
         let signature_renderer = gtk::CellRendererText::new();
-        signature_renderer.set_property_editable(true);
+        signature_renderer.set_editable(true);
         let _self = self.clone();
         signature_renderer.connect_edited(move |_, path, text| {
             _self.signature_cell_edited(path, text);
@@ -247,7 +246,7 @@ impl Window {
         self.treeview.append_column(&column);
 
         let id_renderer = gtk::CellRendererText::new();
-        id_renderer.set_property_editable(true);
+        id_renderer.set_editable(true);
         let _self = self.clone();
         id_renderer.connect_edited(move |_, path, text| {
             _self.id_cell_edited(path, text);
@@ -260,8 +259,8 @@ impl Window {
         self.treeview.append_column(&column);
 
         let flags_renderer = gtk::CellRendererText::new();
-        flags_renderer.set_alignment(1.0, 0.5);
-        flags_renderer.set_property_editable(true);
+        CellRendererExt::set_alignment(&flags_renderer, 1.0, 0.5);
+        flags_renderer.set_editable(true);
         let _self = self.clone();
         flags_renderer.connect_edited(move |_, path, text| {
             _self.flags_cell_edited(path, text);
@@ -273,7 +272,7 @@ impl Window {
         self.treeview.append_column(&column);
 
         let date_renderer = gtk::CellRendererText::new();
-        date_renderer.set_property_editable(true);
+        date_renderer.set_editable(true);
         let _self = self.clone();
         date_renderer.connect_edited(move |_, path, text| {
             _self.date_cell_edited(path, text);
@@ -284,7 +283,9 @@ impl Window {
         column.add_attribute(&date_renderer, "text", Column::Date.into());
         self.treeview.append_column(&column);
 
-        let scrolled = gtk::ScrolledWindow::new(None, None);
+
+        let auto_adj: Option<&gtk::Adjustment> = None;
+        let scrolled = gtk::ScrolledWindow::new(auto_adj, auto_adj);
         scrolled.add(&self.treeview);
 
         contents.pack_start(&self.searchbar, false, false, 0);
@@ -346,7 +347,7 @@ impl Window {
     fn search(&self) {
         {
             let mut filter_needle = self.filter_needle.borrow_mut();
-            *filter_needle = self.searchentry.get_text().unwrap().to_lowercase();
+            *filter_needle = self.searchentry.text().to_lowercase();
         }
 
         let filtered_data: &gtk::TreeModelFilter = &*self.filtered_data.borrow();
@@ -399,11 +400,11 @@ impl Window {
         filtered_data.set_visible_func(move |_, iter| {
             _self.filter_func(iter)
         });
-        self.treeview.set_model(filtered_data);
+        self.treeview.set_model(Some(filtered_data));
 
         self.stack.set_visible_child_name("contents");
 
-        match gtk::RecentManager::get_default() {
+        match gtk::RecentManager::default() {
             Some(recents) => {
                 recents.add_item(&*self.source_uri.borrow());
             },
@@ -463,7 +464,6 @@ impl Window {
 
     fn value_matches(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
         let data: &ListStore = &*self.data.borrow();
-
         data.get_value(iter, column).map_or(false, |value| {
             &value == needle
         })
@@ -510,11 +510,13 @@ impl Window {
             // Only proceed if the user has explicitly selected the
             // corresponding option; pressing Cancel or dismissing
             // the dialog by pressing ESC cancels the close operation
-            if dialog.run() == gtk::ResponseType::Ok.into() {
+            if dialog.run() == gtk::ResponseType::Ok {
                 ret = true;
             }
 
-            dialog.destroy()
+            unsafe {
+                dialog.destroy();
+            }
         } else {
             ret = true;
         }
@@ -602,8 +604,8 @@ impl Window {
         data.set_all_values(&iter, &values);
 
         // Scroll to it and start editing right away
-        self.treeview.scroll_to_cell(&path, None, false, 0.0, 0.0);
-        self.treeview.set_cursor(&path, &self.peoplecolumn, true);
+        self.treeview.scroll_to_cell(Some(&path), Some(&self.peoplecolumn), false, 0.0, 0.0);
+        self.treeview.set_cursor(&path, Some(&self.peoplecolumn), true);
     }
 
     fn start_menu_action(&self) {
@@ -625,20 +627,22 @@ impl Window {
             Some(&self.parent),
             gtk::FileChooserAction::Open,
         );
-        dialog.add_button("Cancel", gtk::ResponseType::Cancel.into());
-        dialog.add_button("Open", gtk::ResponseType::Ok.into());
+        dialog.add_button("Cancel", gtk::ResponseType::Cancel);
+        dialog.add_button("Open", gtk::ResponseType::Ok);
 
-        if dialog.run() == gtk::ResponseType::Ok.into() {
-            let filename = dialog.get_filename();
-            let uri = dialog.get_uri();
+        if dialog.run() == gtk::ResponseType::Ok {
+            let filename = dialog.filename();
+            let uri = dialog.uri();
 
             if filename.is_some() && uri.is_some() {
-                self.set_data_source(filename.unwrap(), uri.unwrap());
+                self.set_data_source(filename.unwrap(), uri.unwrap().to_string());
                 self.load_data();
             }
         }
 
-        dialog.destroy();
+        unsafe {
+            dialog.destroy();
+        }
     }
 
     fn save_action(&self) {

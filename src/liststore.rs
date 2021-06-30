@@ -30,7 +30,7 @@ pub struct ListStore {
 impl ListStore {
     pub fn new() -> Self {
         Self {
-            parent: gtk::ListStore::new(&[gtk::Type::String; Column::SIZE]),
+            parent: gtk::ListStore::new(&[glib::Type::STRING; Column::SIZE]),
         }
     }
 
@@ -50,51 +50,45 @@ impl ListStore {
     }
 
     pub fn get_value(&self, iter: &gtk::TreeIter, column: &Column) -> Option<String> {
-        self.parent.get_value(iter, i32::from(column.clone())).get::<String>()
+        let variant = self.parent.value(iter, i32::from(column.clone())).get::<String>();
+
+        match variant {
+            Ok(value) => Some(value),
+            Err(_) => None,
+        }
     }
 
     pub fn set_value(&self, iter: &gtk::TreeIter, column: &Column, value: &String) {
-        let record: [&dyn glib::ToValue; 1] = [
-            value,
-        ];
-        let indexes: [u32; 1] = [
-            u32::from(column.clone()),
+        let record: [(u32, &dyn glib::ToValue); 1] = [
+            (u32::from(column.clone()), value),
         ];
 
-        self.parent.set(iter, &indexes, &record);
+        self.parent.set(iter, &record);
     }
 
     pub fn set_all_values(&self, iter: &gtk::TreeIter, values: &[String]) {
-        let record: [&dyn glib::ToValue; Column::SIZE] = [
-            &values[0],
-            &values[1],
-            &values[2],
-            &values[3],
-            &values[4],
-            &values[5],
-        ];
-        let indexes: [u32; Column::SIZE] = [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
+        let record: [(u32, &dyn glib::ToValue); Column::SIZE] = [
+            (0, &values[0]),
+            (1, &values[1]),
+            (2, &values[2]),
+            (3, &values[3]),
+            (4, &values[4]),
+            (5, &values[5]),
         ];
 
-        self.parent.set(iter, &indexes, &record);
+        self.parent.set(iter, &record);
     }
 
     pub fn get_path(&self, iter: &gtk::TreeIter) -> Option<gtk::TreePath> {
-        self.parent.get_path(iter)
+        self.parent.path(iter)
     }
 
     pub fn get_iter(&self, path: &gtk::TreePath) -> Option<gtk::TreeIter> {
-        self.parent.get_iter(path)
+        self.parent.iter(path)
     }
 
     pub fn get_iter_first(&self) -> Option<gtk::TreeIter> {
-        self.parent.get_iter_first()
+        self.parent.iter_first()
     }
 
     pub fn iter_next(&self, iter: &gtk::TreeIter) -> bool {

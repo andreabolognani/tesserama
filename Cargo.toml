@@ -4,20 +4,20 @@ version = "0.1.0"
 authors = ["Andrea Bolognani <eof@kiyuko.org>"]
 
 [dependencies.glib]
-version = "0.4.1"
-features = ["v2_48"]
+version = "0.14.0"
+features = ["v2_64"]
 
 [dependencies.gio]
-version = "0.3.0"
-features = ["v2_48"]
+version = "0.14.0"
+features = ["v2_64"]
 
 [dependencies.pango]
-version = "0.3.0"
-features = ["v1_38"]
+version = "0.14.0"
+features = ["v1_44"]
 
 [dependencies.gtk]
-version = "0.3.0"
-features = ["v3_20"]
+version = "0.14.0"
+features = ["v3_24"]
 
 [dependencies.csv]
 version = "1.1.6"
