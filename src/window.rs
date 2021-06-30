@@ -456,8 +456,8 @@ impl Window {
         } else {
             // In all other cases, we perform a case-insensitive substring
             // search among people's names and signatures
-            (self.value_contains(iter, &Column::People, filter_needle) ||
-             self.value_contains(iter, &Column::Signature, filter_needle))
+            self.value_contains(iter, &Column::People, filter_needle) ||
+            self.value_contains(iter, &Column::Signature, filter_needle)
         }
     }
 

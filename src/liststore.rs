@@ -54,7 +54,7 @@ impl ListStore {
     }
 
     pub fn set_value(&self, iter: &gtk::TreeIter, column: &Column, value: &String) {
-        let record: [&glib::ToValue; 1] = [
+        let record: [&dyn glib::ToValue; 1] = [
             value,
         ];
         let indexes: [u32; 1] = [
@@ -65,7 +65,7 @@ impl ListStore {
     }
 
     pub fn set_all_values(&self, iter: &gtk::TreeIter, values: &[String]) {
-        let record: [&glib::ToValue; Column::SIZE] = [
+        let record: [&dyn glib::ToValue; Column::SIZE] = [
             &values[0],
             &values[1],
             &values[2],
