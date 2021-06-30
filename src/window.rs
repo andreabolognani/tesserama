@@ -19,8 +19,8 @@ extern crate glib;
 extern crate gio;
 extern crate pango;
 extern crate gtk;
+extern crate chrono;
 extern crate csv;
-extern crate time;
 
 use std::cell::RefCell;
 use std::cmp;
@@ -584,10 +584,8 @@ impl Window {
 
         let number: String = fmt::format(format_args!("{}", number));
 
-        let date: String = match time::now().strftime("%d/%m/%y") {
-            Ok(now) => { fmt::format(format_args!("{}", now)) },
-            Err(_) => { String::new() },
-        };
+        let today = chrono::Local::today();
+        let date = today.format("%d/%m/%y").to_string();
 
         // Create an empty record
         let mut values = ListStore::new_row();
