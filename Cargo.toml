@@ -2,6 +2,7 @@
 name = "tesserama"
 version = "0.1.0"
 authors = ["Andrea Bolognani <eof@kiyuko.org>"]
+edition = "2018"
 
 [dependencies.glib]
 version = "0.14.0"
