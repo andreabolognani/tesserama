@@ -29,15 +29,13 @@ impl Application {
     pub fn new() -> Self {
         let flags = gio::ApplicationFlags::empty();
         let ret = Self {
-            parent: gtk::Application::new(None, flags),
+            parent: gtk::Application::new(Some("org.kiyuko.Tesserama"), flags),
         };
         ret.setup();
         ret
     }
 
     fn setup(&self) {
-        glib::set_application_name("Tesserama");
-
         self.parent.set_accels_for_action("win.search", &["<Ctrl>f"]);
         self.parent.set_accels_for_action("win.insert", &["<Ctrl>i"]);
         self.parent.set_accels_for_action("win.open", &["<Ctrl>o"]);
