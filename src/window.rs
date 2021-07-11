@@ -28,6 +28,7 @@ use ::gtk::prelude::*;
 
 use crate::column::Column;
 use crate::simpleaction::SimpleAction;
+use crate::simpleactionstateful::SimpleActionStateful;
 use crate::liststore::ListStore;
 use crate::application::Application;
 
@@ -44,9 +45,9 @@ pub struct Window {
     searchbar: gtk::SearchBar,
     treeview: gtk::TreeView,
     peoplecolumn: gtk::TreeViewColumn,
-    searchaction: SimpleAction,
+    searchaction: SimpleActionStateful,
     insertaction: SimpleAction,
-    menuaction: SimpleAction,
+    menuaction: SimpleActionStateful,
     openaction: SimpleAction,
     saveaction: SimpleAction,
     source_filename: Rc<RefCell<PathBuf>>,
@@ -75,9 +76,9 @@ impl Window {
             searchbar: gtk::SearchBar::new(),
             treeview: gtk::TreeView::new(),
             peoplecolumn: gtk::TreeViewColumn::new(),
-            searchaction: SimpleAction::new_stateful("search", false),
+            searchaction: SimpleActionStateful::new("search", false),
             insertaction: SimpleAction::new("insert"),
-            menuaction: SimpleAction::new_stateful("menu", false),
+            menuaction: SimpleActionStateful::new("menu", false),
             openaction: SimpleAction::new("open"),
             saveaction: SimpleAction::new("save"),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),

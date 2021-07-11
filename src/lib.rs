@@ -17,6 +17,7 @@
 
 mod column;
 mod simpleaction;
+mod simpleactionstateful;
 mod liststore;
 mod window;
 mod application;

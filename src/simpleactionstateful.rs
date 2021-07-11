@@ -15,16 +15,30 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+use ::gio::prelude::*;
+
 #[derive(Clone)]
-pub struct SimpleAction {
+pub struct SimpleActionStateful {
     parent: gio::SimpleAction,
 }
 
-impl SimpleAction {
-    pub fn new(name: &str) -> Self {
+impl SimpleActionStateful {
+    pub fn new(name: &str, state: bool) -> Self {
         Self {
-            parent: gio::SimpleAction::new(name, None),
+            parent: gio::SimpleAction::new_stateful(
+                name,
+                None,
+                &state.to_variant(),
+            )
         }
+    }
+
+    pub fn state(&self) -> Option<bool> {
+        self.parent.state().and_then(|v| { v.get() })
+    }
+
+    pub fn change_state(&self, state: bool) {
+        self.parent.change_state(&state.to_variant());
     }
 
     pub fn set_enabled(&self, enabled: bool) {
