@@ -68,8 +68,8 @@ impl Window {
             headerbar: gtk::HeaderBar::new(),
             searchbutton: gtk::ToggleButton::new(),
             insertbutton: gtk::Button::with_label("Insert"),
-            menubutton: menubutton,
-            menupopover: menupopover,
+            menubutton,
+            menupopover,
             stack: gtk::Stack::new(),
             searchentry: gtk::SearchEntry::new(),
             searchbar: gtk::SearchBar::new(),
@@ -300,12 +300,12 @@ impl Window {
         let parent: &Path = source_filename.parent().unwrap();
 
         let mut tmp = String::from("");
-        let title: Option<&str> = file_name.to_str().and_then(|s| {
+        let title: Option<&str> = file_name.to_str().map(|s| {
             if self.is_dirty() {
                 tmp.push('*');
             }
             tmp.push_str(s);
-            Some(tmp.as_str())
+            tmp.as_str()
         });
         let subtitle: Option<&str> = parent.to_str();
 
@@ -367,22 +367,21 @@ impl Window {
                          .from_path(path)
                          .expect("Failed to open file");
 
-        for record in reader.records() {
-            if record.is_ok() {
-                let record: csv::StringRecord = record.unwrap();
+        // Grab the good records only
+        let records = reader.records().filter(|r| r.is_ok()).flatten();
 
-                let mut values = ListStore::new_row();
+        for record in records {
+            let mut values = ListStore::new_row();
 
-                // Extract values from the record. Missing fields default to
-                // the empty string, so that it's possible to load files
-                // created using older versions of the application
-                for i in 0..record.len() {
-                    values[i] = String::from(&record[i]);
-                }
-
-                let iter = data.append();
-                data.set_all_values(&iter, &values);
+            // Extract values from the record. Missing fields default to
+            // the empty string, so that it's possible to load files
+            // created using older versions of the application
+            for i in 0..record.len() {
+                values[i] = String::from(&record[i]);
             }
+
+            let iter = data.append();
+            data.set_all_values(&iter, &values);
         }
 
         self.set_dirty(false);
@@ -397,11 +396,8 @@ impl Window {
 
         self.stack.set_visible_child_name("contents");
 
-        match gtk::RecentManager::default() {
-            Some(recents) => {
-                recents.add_item(&*self.source_uri.borrow());
-            },
-            None => {},
+        if let Some(recents) = gtk::RecentManager::default() {
+            recents.add_item(&*self.source_uri.borrow());
         }
     }
 
@@ -428,7 +424,7 @@ impl Window {
                 }
             }
 
-            if &record[Column::People.into()] != "" {
+            if !&record[Column::People.into()].is_empty() {
                 writer.write_record(&record).expect("Failed to write output file");
             }
 
@@ -458,7 +454,7 @@ impl Window {
     fn value_matches(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
         let data: &ListStore = &*self.data.borrow();
         data.value(iter, column).map_or(false, |value| {
-            &value == needle
+            value == needle
         })
     }
 
@@ -532,9 +528,7 @@ impl Window {
         let iter: gtk::TreeIter = data.iter(&path).unwrap();
         let value: Option<String> = data.value(&iter, column);
 
-        if value.is_some() {
-            let current: &String = &value.unwrap();
-
+        if let Some(current) = value {
             if text != current {
                 data.set_value(&iter, column, &String::from(text));
                 self.set_dirty(true);
@@ -560,14 +554,12 @@ impl Window {
         let mut number: i32 = 1;
         let iter: Option<gtk::TreeIter> = data.iter_first();
 
-        if iter.is_some() {
-            let iter: gtk::TreeIter = iter.unwrap();
-
+        if let Some(iter) = iter {
             loop {
                 let value: Option<String> = data.value(&iter, &Column::Number);
 
-                if value.is_some() {
-                    number = match value.unwrap().parse::<i32>() {
+                if let Some(value) = value {
+                    number = match value.parse::<i32>() {
                         Ok(value) => cmp::max(number, value + 1),
                         Err(_) => number,
                     }
@@ -627,8 +619,8 @@ impl Window {
             let filename = dialog.filename();
             let uri = dialog.uri();
 
-            if filename.is_some() && uri.is_some() {
-                self.set_data_source(filename.unwrap(), uri.unwrap().to_string());
+            if let (Some(filename), Some(uri)) = (filename, uri) {
+                self.set_data_source(filename, uri.to_string());
                 self.load_data();
             }
         }
