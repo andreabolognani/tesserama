@@ -43,7 +43,7 @@ impl SimpleAction {
         }
     }
 
-    pub fn get_state(&self) -> Option<bool> {
+    pub fn state(&self) -> Option<bool> {
         self.parent.state().and_then(|v| { v.get() })
     }
 

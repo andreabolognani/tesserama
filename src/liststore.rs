@@ -49,7 +49,7 @@ impl ListStore {
         self.parent.append()
     }
 
-    pub fn get_value(&self, iter: &gtk::TreeIter, column: &Column) -> Option<String> {
+    pub fn value(&self, iter: &gtk::TreeIter, column: &Column) -> Option<String> {
         let variant = self.parent.value(iter, i32::from(column.clone())).get::<String>();
 
         match variant {
@@ -79,15 +79,15 @@ impl ListStore {
         self.parent.set(iter, &record);
     }
 
-    pub fn get_path(&self, iter: &gtk::TreeIter) -> Option<gtk::TreePath> {
+    pub fn path(&self, iter: &gtk::TreeIter) -> Option<gtk::TreePath> {
         self.parent.path(iter)
     }
 
-    pub fn get_iter(&self, path: &gtk::TreePath) -> Option<gtk::TreeIter> {
+    pub fn iter(&self, path: &gtk::TreePath) -> Option<gtk::TreeIter> {
         self.parent.iter(path)
     }
 
-    pub fn get_iter_first(&self) -> Option<gtk::TreeIter> {
+    pub fn iter_first(&self) -> Option<gtk::TreeIter> {
         self.parent.iter_first()
     }
 

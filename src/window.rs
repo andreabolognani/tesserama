@@ -421,13 +421,13 @@ impl Window {
                          .expect("Failed to open output file");
 
         let data: &ListStore = &*self.data.borrow();
-        let iter: gtk::TreeIter = data.get_iter_first().unwrap();
+        let iter: gtk::TreeIter = data.iter_first().unwrap();
 
         loop {
             let mut record = csv::StringRecord::new();
 
             for x in 0..Column::SIZE {
-                let value: Option<String> = data.get_value(&iter, &Column::from(x));
+                let value: Option<String> = data.value(&iter, &Column::from(x));
 
                 match value {
                     Some(ref field) => record.push_field(field),
@@ -464,7 +464,7 @@ impl Window {
 
     fn value_matches(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
         let data: &ListStore = &*self.data.borrow();
-        data.get_value(iter, column).map_or(false, |value| {
+        data.value(iter, column).map_or(false, |value| {
             &value == needle
         })
     }
@@ -472,7 +472,7 @@ impl Window {
     fn value_contains(&self, iter: &gtk::TreeIter, column: &Column, needle: &str) -> bool {
         let data: &ListStore = &*self.data.borrow();
 
-        data.get_value(iter, column).map_or(false, |value| {
+        data.value(iter, column).map_or(false, |value| {
             let value = value.to_lowercase();
 
             // Most entries are in the form
@@ -536,8 +536,8 @@ impl Window {
     fn update_column(&self, path: gtk::TreePath, column: &Column, text: &str) {
         let data: &ListStore = &*self.data.borrow();
         let path: gtk::TreePath = self.convert_path(path);
-        let iter: gtk::TreeIter = data.get_iter(&path).unwrap();
-        let value: Option<String> = data.get_value(&iter, column);
+        let iter: gtk::TreeIter = data.iter(&path).unwrap();
+        let value: Option<String> = data.value(&iter, column);
 
         if value.is_some() {
             let current: &String = &value.unwrap();
@@ -565,13 +565,13 @@ impl Window {
         let data: &ListStore = &*self.data.borrow();
 
         let mut number: i32 = 1;
-        let iter: Option<gtk::TreeIter> = data.get_iter_first();
+        let iter: Option<gtk::TreeIter> = data.iter_first();
 
         if iter.is_some() {
             let iter: gtk::TreeIter = iter.unwrap();
 
             loop {
-                let value: Option<String> = data.get_value(&iter, &Column::Number);
+                let value: Option<String> = data.value(&iter, &Column::Number);
 
                 if value.is_some() {
                     number = match value.unwrap().parse::<i32>() {
@@ -598,7 +598,7 @@ impl Window {
         values[usize::from(Column::Date)] = date;
 
         let iter: gtk::TreeIter = data.append();
-        let path: gtk::TreePath = data.get_path(&iter).unwrap();
+        let path: gtk::TreePath = data.path(&iter).unwrap();
 
         // Insert the fresh data
         data.set_all_values(&iter, &values);
@@ -658,7 +658,7 @@ impl Window {
     // Signal handlers
 
     fn search_action_activated(&self) {
-        let state = !self.searchaction.get_state().unwrap();
+        let state = !self.searchaction.state().unwrap();
 
         self.searchaction.change_state(state);
 
@@ -686,7 +686,7 @@ impl Window {
     }
 
     fn menu_action_activated(&self) {
-        let state = !self.menuaction.get_state().unwrap();
+        let state = !self.menuaction.state().unwrap();
 
         self.menuaction.change_state(state);
 
