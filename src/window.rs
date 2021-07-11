@@ -15,13 +15,6 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-extern crate glib;
-extern crate gio;
-extern crate pango;
-extern crate gtk;
-extern crate chrono;
-extern crate csv;
-
 use std::cell::RefCell;
 use std::cmp;
 use std::ffi::OsStr;
@@ -30,13 +23,13 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use self::gio::prelude::*;
-use self::gtk::prelude::*;
+use ::gio::prelude::*;
+use ::gtk::prelude::*;
 
-use super::column::Column;
-use super::simpleaction::SimpleAction;
-use super::liststore::ListStore;
-use super::application::Application;
+use crate::column::Column;
+use crate::simpleaction::SimpleAction;
+use crate::liststore::ListStore;
+use crate::application::Application;
 
 #[derive(Clone)]
 pub struct Window {

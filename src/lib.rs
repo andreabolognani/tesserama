@@ -21,4 +21,4 @@ mod liststore;
 mod window;
 mod application;
 
-pub use application::Application;
+pub use crate::application::Application;

@@ -15,13 +15,9 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-extern crate glib;
-extern crate gio;
-extern crate gtk;
+use ::gtk::prelude::*;
 
-use self::gtk::prelude::*;
-
-use super::column::Column;
+use crate::column::Column;
 
 pub struct ListStore {
     parent: gtk::ListStore,

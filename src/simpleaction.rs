@@ -15,11 +15,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-extern crate glib;
-extern crate gio;
-
-use self::glib::prelude::*;
-use self::gio::prelude::*;
+use ::gio::prelude::*;
 
 #[derive(Clone)]
 pub struct SimpleAction {

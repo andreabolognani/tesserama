@@ -15,14 +15,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-extern crate glib;
-extern crate gio;
-extern crate gtk;
+use ::gio::prelude::*;
+use ::gtk::prelude::*;
 
-use self::gio::prelude::*;
-use self::gtk::prelude::*;
-
-use super::window::Window;
+use crate::window::Window;
 
 #[derive(Clone)]
 pub struct Application {
