@@ -640,7 +640,7 @@ impl Window {
     // Signal handlers
 
     fn search_action_activated(&self) {
-        let state = !self.searchaction.state().unwrap();
+        let state = !self.searchaction.state();
 
         self.searchaction.change_state(state);
 
@@ -668,7 +668,7 @@ impl Window {
     }
 
     fn menu_action_activated(&self) {
-        let state = !self.menuaction.state().unwrap();
+        let state = !self.menuaction.state();
 
         self.menuaction.change_state(state);
 

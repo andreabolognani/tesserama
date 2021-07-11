@@ -33,8 +33,8 @@ impl SimpleActionStateful {
         }
     }
 
-    pub fn state(&self) -> Option<bool> {
-        self.parent.state().and_then(|v| { v.get() })
+    pub fn state(&self) -> bool {
+        self.parent.state().unwrap().get().unwrap()
     }
 
     pub fn change_state(&self, state: bool) {
