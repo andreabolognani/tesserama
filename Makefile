@@ -1,66 +1,34 @@
-NULL=
+appname = tesserama
+appid = org.kiyuko.Tesserama
 
-builddir=flatpak/build
-repodir=flatpak/repo
+bindir = ${HOME}/.local/bin
+datadir = ${HOME}/.local/share
 
-src=src/*.rs
-bin=$(builddir)/files/bin/tesserama
+outdir = target/debug
 
-ifneq ($(ARCH),)
-arch= \
-	--arch=$(ARCH) \
-	$(NULL)
-endif
-ifeq ($(DEBUG),1)
-release=
-else
-release= \
-	--release \
-	$(NULL)
-endif
-ifeq ($(GPGSIGN),0)
-gpgsign=
-else
-gpgsign= \
-	--gpg-sign=$(KEYID) \
-	$(NULL)
-endif
-sdkextensions= \
-	--sdk-extension=org.freedesktop.Sdk.Extension.rust-stable \
-	$(NULL)
-sockets= \
-	--socket=session-bus \
-	--socket=wayland \
-	--socket=x11 \
-	$(NULL)
-shares= \
-	--share=ipc \
-	$(NULL)
-filesystems= \
-	--filesystem=host \
-	$(NULL)
+all: binary data
 
-all: $(bin)
+binary:
+	cargo build
 
-$(builddir):
-	flatpak build-init $(arch) $(sdkextensions) $(builddir) org.kiyuko.Tesserama org.gnome.Sdk org.gnome.Platform 3.26
+data:
+	sed -E \
+		's,@bindir@,$(bindir),g' \
+		$(appid).desktop.in \
+		>$(outdir)/$(appid).desktop
 
-$(bin): $(builddir) $(src)
-	flatpak build $(builddir) sh -c 'source /usr/lib/sdk/rust-stable/enable.sh && cargo build $(release)'
-	flatpak build $(builddir) install -m 0755 -d /app/bin
-	flatpak build $(builddir) install -m 0755 -d /app/share/applications
-	flatpak build $(builddir) install -m 0755 target/release/tesserama /app/bin
-	flatpak build $(builddir) install -m 0644 tesserama.desktop /app/share/applications/org.kiyuko.Tesserama.desktop
-
-run: $(bin)
-	flatpak build $(sockets) $(shares) $(filesystems) $(builddir) sh -c 'RUST_BACKTRACE=1 tesserama'
-
-publish: $(bin)
-	flatpak build-finish $(sockets) $(shares) $(filesystems) --command=tesserama $(builddir)
-	flatpak build-export $(gpgsign) $(repodir) $(builddir)
-	rm -rf $(builddir)
+install: binary data
+	mkdir -p \
+		$(bindir)/ \
+		$(datadir)/applications/
+	install -m 0755 \
+		$(outdir)/$(appname) \
+		$(bindir)/
+	install -m 0644 \
+		$(outdir)/$(appid).desktop \
+		$(datadir)/applications/
 
 clean:
-	rm -rf $(builddir)
+	rm -rf $(outdir)/
 
-.PHONY: all run publish clean
+.PHONY: all binary data install clean
