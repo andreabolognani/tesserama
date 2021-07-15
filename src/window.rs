@@ -45,11 +45,12 @@ pub struct Window {
     searchbar: gtk::SearchBar,
     treeview: gtk::TreeView,
     peoplecolumn: gtk::TreeViewColumn,
-    searchaction: SimpleActionStateful,
+    searchaction: SimpleAction,
     insertaction: SimpleAction,
     menuaction: SimpleActionStateful,
     openaction: SimpleAction,
     saveaction: SimpleAction,
+    togglesearchaction: SimpleActionStateful,
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
     dirty: Rc<RefCell<bool>>,
@@ -76,11 +77,12 @@ impl Window {
             searchbar: gtk::SearchBar::new(),
             treeview: gtk::TreeView::new(),
             peoplecolumn: gtk::TreeViewColumn::new(),
-            searchaction: SimpleActionStateful::new("search", false),
+            searchaction: SimpleAction::new("search"),
             insertaction: SimpleAction::new("insert"),
             menuaction: SimpleActionStateful::new("menu", false),
             openaction: SimpleAction::new("open"),
             saveaction: SimpleAction::new("save"),
+            togglesearchaction: SimpleActionStateful::new("togglesearch", false),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),
             source_uri: Rc::new(RefCell::new(String::new())),
             dirty: Rc::new(RefCell::new(false)),
@@ -137,6 +139,13 @@ impl Window {
         self.saveaction.set_enabled(false);
         self.parent.add_action(self.saveaction.as_parent());
 
+        let _self = self.clone();
+        self.togglesearchaction.as_parent().connect_activate(move |_,_| {
+            _self.toggle_search_action_activated();
+        });
+        self.togglesearchaction.set_enabled(false);
+        self.parent.add_action(self.togglesearchaction.as_parent());
+
         /* Header bar */
 
         self.headerbar.set_show_close_button(true);
@@ -148,7 +157,7 @@ impl Window {
         );
         self.searchbutton.set_image(Some(&image));
         self.searchbutton.set_tooltip_text(Some("Search"));
-        self.searchbutton.set_action_name(Some("win.search"));
+        self.searchbutton.set_action_name(Some("win.togglesearch"));
         self.headerbar.pack_start(&self.searchbutton);
 
         self.insertbutton.set_action_name(Some("win.insert"));
@@ -384,6 +393,7 @@ impl Window {
         self.set_dirty(false);
         self.searchaction.set_enabled(true);
         self.insertaction.set_enabled(true);
+        self.togglesearchaction.set_enabled(true);
 
         let _self = self.clone();
         filtered_data.set_visible_func(move |_, iter| {
@@ -536,12 +546,16 @@ impl Window {
     // High-level actions
 
     fn start_search_action(&self) {
-        self.searchbar.set_search_mode(true);
         self.insertaction.set_enabled(false);
+        self.togglesearchaction.change_state(true);
+        self.searchbar.set_search_mode(true);
+
+        self.searchentry.grab_focus();
     }
 
     fn stop_search_action(&self) {
         self.searchbar.set_search_mode(false);
+        self.togglesearchaction.change_state(false);
         self.insertaction.set_enabled(true);
     }
 
@@ -640,9 +654,11 @@ impl Window {
     // Signal handlers
 
     fn search_action_activated(&self) {
-        let state = !self.searchaction.state();
+        self.start_search_action();
+    }
 
-        self.searchaction.change_state(state);
+    fn toggle_search_action_activated(&self) {
+        let state = !self.togglesearchaction.state();
 
         if state {
             self.start_search_action();
@@ -656,8 +672,6 @@ impl Window {
     }
 
     fn stop_search(&self) {
-        self.searchaction.change_state(false);
-
         // A bit redundant, but guarantees we perform the same teardown
         // steps regardless of how the search has been interrupted
         self.stop_search_action();
