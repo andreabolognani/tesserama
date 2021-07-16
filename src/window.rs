@@ -47,10 +47,10 @@ pub struct Window {
     peoplecolumn: gtk::TreeViewColumn,
     searchaction: SimpleAction,
     insertaction: SimpleAction,
-    menuaction: SimpleActionStateful,
     openaction: SimpleAction,
     saveaction: SimpleAction,
     togglesearchaction: SimpleActionStateful,
+    togglemenuaction: SimpleActionStateful,
     source_filename: Rc<RefCell<PathBuf>>,
     source_uri: Rc<RefCell<String>>,
     dirty: Rc<RefCell<bool>>,
@@ -79,10 +79,10 @@ impl Window {
             peoplecolumn: gtk::TreeViewColumn::new(),
             searchaction: SimpleAction::new("search"),
             insertaction: SimpleAction::new("insert"),
-            menuaction: SimpleActionStateful::new("menu", false),
             openaction: SimpleAction::new("open"),
             saveaction: SimpleAction::new("save"),
             togglesearchaction: SimpleActionStateful::new("togglesearch", false),
+            togglemenuaction: SimpleActionStateful::new("togglemenu", false),
             source_filename: Rc::new(RefCell::new(PathBuf::new())),
             source_uri: Rc::new(RefCell::new(String::new())),
             dirty: Rc::new(RefCell::new(false)),
@@ -121,12 +121,6 @@ impl Window {
         self.parent.add_action(self.insertaction.as_parent());
 
         let _self = self.clone();
-        self.menuaction.as_parent().connect_activate(move |_,_| {
-            _self.menu_action_activated();
-        });
-        self.parent.add_action(self.menuaction.as_parent());
-
-        let _self = self.clone();
         self.openaction.as_parent().connect_activate(move |_,_| {
             _self.open_action_activated();
         });
@@ -145,6 +139,12 @@ impl Window {
         });
         self.togglesearchaction.set_enabled(false);
         self.parent.add_action(self.togglesearchaction.as_parent());
+
+        let _self = self.clone();
+        self.togglemenuaction.as_parent().connect_activate(move |_,_| {
+            _self.toggle_menu_action_activated();
+        });
+        self.parent.add_action(self.togglemenuaction.as_parent());
 
         /* Header bar */
 
@@ -169,7 +169,7 @@ impl Window {
         );
         self.menubutton.set_image(Some(&image));
         self.menubutton.set_tooltip_text(Some("Menu"));
-        self.menubutton.set_action_name(Some("win.menu"));
+        self.menubutton.set_action_name(Some("win.togglemenu"));
         self.headerbar.pack_end(&self.menubutton);
 
         let menu = gio::Menu::new();
@@ -605,11 +605,13 @@ impl Window {
     }
 
     fn start_menu_action(&self) {
+        self.togglemenuaction.change_state(true);
         self.menupopover.show();
     }
 
     fn stop_menu_action(&self) {
         self.menupopover.hide();
+        self.togglemenuaction.change_state(false);
     }
 
     fn open_action(&self) {
@@ -681,10 +683,8 @@ impl Window {
         self.insert_action();
     }
 
-    fn menu_action_activated(&self) {
-        let state = !self.menuaction.state();
-
-        self.menuaction.change_state(state);
+    fn toggle_menu_action_activated(&self) {
+        let state = !self.togglemenuaction.state();
 
         if state {
             self.start_menu_action();
@@ -694,7 +694,7 @@ impl Window {
     }
 
     fn menu_popover_closed(&self) {
-        self.menuaction.change_state(false);
+        self.stop_menu_action();
     }
 
     fn open_action_activated(&self) {
