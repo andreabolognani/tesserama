@@ -257,19 +257,6 @@ impl Window {
         column.add_attribute(&id_renderer, "text", Column::ID.into());
         self.treeview.append_column(&column);
 
-        let flags_renderer = gtk::CellRendererText::new();
-        CellRendererExt::set_alignment(&flags_renderer, 1.0, 0.5);
-        flags_renderer.set_editable(true);
-        let _self = self.clone();
-        flags_renderer.connect_edited(move |_, path, text| {
-            _self.flags_cell_edited(path, text);
-        });
-        let column = gtk::TreeViewColumn::new();
-        column.set_sizing(gtk::TreeViewColumnSizing::GrowOnly);
-        column.pack_start(&flags_renderer, false);
-        column.add_attribute(&flags_renderer, "text", Column::Flags.into());
-        self.treeview.append_column(&column);
-
         let date_renderer = gtk::CellRendererText::new();
         date_renderer.set_editable(true);
         let _self = self.clone();
@@ -717,10 +704,6 @@ impl Window {
 
     fn id_cell_edited(&self, path: gtk::TreePath, text: &str) {
         self.update_column(path, &Column::ID, text);
-    }
-
-    fn flags_cell_edited(&self, path: gtk::TreePath, text: &str) {
-        self.update_column(path, &Column::Flags, text);
     }
 
     fn date_cell_edited(&self, path: gtk::TreePath, text: &str) {
