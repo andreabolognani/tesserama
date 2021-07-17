@@ -674,8 +674,6 @@ impl Window {
     }
 
     fn stop_search(&self) {
-        // A bit redundant, but guarantees we perform the same teardown
-        // steps regardless of how the search has been interrupted
         self.stop_search_action();
     }
 
